@@ -134,8 +134,8 @@ struct ContactSupportView: View {
                 Text("Other Ways to Reach Us")
                     .font(.headline)
                 
-                ContactMethod(icon: "envelope.fill", title: "Email", detail: "support@infinitumwatereject.com")
-                ContactMethod(icon: "globe", title: "Website", detail: "infinitumwatereject.com")
+                ContactMethod(icon: "envelope.fill", title: "Email", detail: "support@infinitumimagery.com")
+                ContactMethod(icon: "globe", title: "Website", detail: "infinitumimagery.com")
                 ContactMethod(icon: "location.fill", title: "Location", detail: "Pittsburgh, PA, USA")
             }
             .padding(.top)
@@ -219,7 +219,7 @@ struct PrivacyPolicyView: View {
             
             PolicySection(
                 title: "Contact Us",
-                content: "If you have questions about this privacy policy, please contact us at privacy@infinitumwatereject.com or through the app's support section."
+                content: "If you have questions about this privacy policy, please contact us at privacy@infinitumimagery.com or through the app's support section."
             )
             
             Text("Copyright 2025 Infinitum Imagery LLC")

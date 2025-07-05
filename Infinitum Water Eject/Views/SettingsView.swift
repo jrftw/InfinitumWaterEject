@@ -10,6 +10,9 @@ struct SettingsView: View {
     @State private var showingSupport = false
     @State private var showingChangeLog = false
     // @State private var showingPremiumOffer = false
+    @State private var showingDisclaimer = false
+    @State private var showingPrivacyPolicy = false
+    @State private var showingTermsOfService = false
     
     // Computed property to always get valid settings
     private var userSettings: UserSettings {
@@ -19,6 +22,20 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             List {
+                // Disclaimer Section
+                Section {
+                    Button(action: { showingDisclaimer = true }) {
+                        HStack {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.orange)
+                                .frame(width: 20)
+                            Text(NSLocalizedString("Disclaimer", comment: "Disclaimer label"))
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                        }
+                    }
+                }
+                
                 // User Profile Section
                 Section {
                     HStack {
@@ -27,7 +44,7 @@ struct SettingsView: View {
                             .foregroundColor(.blue)
                         
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Water Ejection User")
+                            Text(NSLocalizedString("Water Ejection User", comment: "User profile label"))
                                 .font(.headline)
                                 .fontWeight(.semibold)
                             
@@ -50,7 +67,7 @@ struct SettingsView: View {
                             }
                             */
                             
-                            Text("Free User")
+                            Text(NSLocalizedString("Free User", comment: "Free user label"))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -72,26 +89,29 @@ struct SettingsView: View {
                 }
                 
                 // App Settings Section
-                Section("App Settings") {
+                Section(NSLocalizedString("App Settings", comment: "App settings section")) {
                     // Theme Selection
                     HStack {
                         Image(systemName: "paintbrush.fill")
                             .foregroundColor(.purple)
                             .frame(width: 20)
                         
-                        Text("Theme")
+                        Text(NSLocalizedString("Theme", comment: "Theme label"))
                         
                         Spacer()
                         
-                        Picker("Theme", selection: Binding(
-                            get: { userSettings.theme },
-                            set: { newTheme in
-                                var updatedSettings = userSettings
-                                updatedSettings.theme = newTheme
-                                coreDataService.saveUserSettings(updatedSettings)
-                                themeManager.setTheme(newTheme)
-                            }
-                        )) {
+                        Picker(
+                            NSLocalizedString("Theme", comment: "Theme label"),
+                            selection: Binding(
+                                get: { userSettings.theme },
+                                set: { newTheme in
+                                    var updatedSettings = userSettings
+                                    updatedSettings.theme = newTheme
+                                    coreDataService.saveUserSettings(updatedSettings)
+                                    themeManager.setTheme(newTheme)
+                                }
+                            )
+                        ) {
                             ForEach(AppTheme.allCases, id: \.self) { theme in
                                 HStack {
                                     Image(systemName: theme.icon)
@@ -109,7 +129,7 @@ struct SettingsView: View {
                             .foregroundColor(.blue)
                             .frame(width: 20)
                         
-                        Text("Current Theme")
+                        Text(NSLocalizedString("Current Theme", comment: "Current theme label"))
                         
                         Spacer()
                         
@@ -129,7 +149,7 @@ struct SettingsView: View {
                             .foregroundColor(.orange)
                             .frame(width: 20)
                         
-                        Text("Notifications")
+                        Text(NSLocalizedString("Notifications", comment: "Notifications label"))
                         
                         Spacer()
                         
@@ -153,7 +173,7 @@ struct SettingsView: View {
                                 .foregroundColor(.green)
                                 .frame(width: 20)
                             
-                            Text("Daily Reminder")
+                            Text(NSLocalizedString("Daily Reminder", comment: "Daily reminder label"))
                             
                             Spacer()
                             
@@ -175,20 +195,23 @@ struct SettingsView: View {
                             .foregroundColor(.red)
                             .frame(width: 20)
                         
-                        Text("Weekly Goal")
+                        Text(NSLocalizedString("Weekly Goal", comment: "Weekly goal label"))
                         
                         Spacer()
                         
-                        Picker("Weekly Goal", selection: Binding(
-                            get: { userSettings.weeklyGoal },
-                            set: { newGoal in
-                                var updatedSettings = userSettings
-                                updatedSettings.weeklyGoal = newGoal
-                                coreDataService.saveUserSettings(updatedSettings)
-                            }
-                        )) {
+                        Picker(
+                            NSLocalizedString("Weekly Goal", comment: "Weekly goal label"),
+                            selection: Binding(
+                                get: { userSettings.weeklyGoal },
+                                set: { newGoal in
+                                    var updatedSettings = userSettings
+                                    updatedSettings.weeklyGoal = newGoal
+                                    coreDataService.saveUserSettings(updatedSettings)
+                                }
+                            )
+                        ) {
                             ForEach([3, 5, 7, 10, 14], id: \.self) { goal in
-                                Text("\(goal) sessions").tag(goal)
+                                Text("\(goal) " + NSLocalizedString("sessions", comment: "sessions label")).tag(goal)
                             }
                         }
                         .pickerStyle(MenuPickerStyle())
@@ -196,7 +219,7 @@ struct SettingsView: View {
                 }
                 
                 // Data Management Section
-                Section("Data Management") {
+                Section(NSLocalizedString("Data Management", comment: "Data management section")) {
                     // Export Data
                     Button(action: exportData) {
                         HStack {
@@ -204,7 +227,7 @@ struct SettingsView: View {
                                 .foregroundColor(.blue)
                                 .frame(width: 20)
                             
-                            Text("Export Data")
+                            Text(NSLocalizedString("Export Data", comment: "Export data label"))
                                 .foregroundColor(.primary)
                         }
                     }
@@ -216,14 +239,14 @@ struct SettingsView: View {
                                 .foregroundColor(.red)
                                 .frame(width: 20)
                             
-                            Text("Clear All Data")
+                            Text(NSLocalizedString("Clear All Data", comment: "Clear all data label"))
                                 .foregroundColor(.red)
                         }
                     }
                 }
                 
                 // Support Section
-                Section("Support") {
+                Section(NSLocalizedString("Support", comment: "Support section")) {
                     // Safety Tips
                     Button(action: { showingTips = true }) {
                         HStack {
@@ -231,7 +254,7 @@ struct SettingsView: View {
                                 .foregroundColor(.yellow)
                                 .frame(width: 20)
                             
-                            Text("Safety Tips")
+                            Text(NSLocalizedString("Safety Tips", comment: "Safety tips label"))
                                 .foregroundColor(.primary)
                         }
                     }
@@ -243,21 +266,21 @@ struct SettingsView: View {
                                 .foregroundColor(.blue)
                                 .frame(width: 20)
                             
-                            Text("Support & Help")
+                            Text(NSLocalizedString("Support & Help", comment: "Support & Help label"))
                                 .foregroundColor(.primary)
                         }
                     }
                 }
                 
                 // About Section
-                Section("About") {
+                Section(NSLocalizedString("About", comment: "About section")) {
                     // Version
                     HStack {
                         Image(systemName: "info.circle.fill")
                             .foregroundColor(.gray)
                             .frame(width: 20)
                         
-                        Text("Version")
+                        Text(NSLocalizedString("Version", comment: "Version label"))
                         
                         Spacer()
                         
@@ -268,31 +291,55 @@ struct SettingsView: View {
                     }
                     
                     // Privacy Policy
-                    Button(action: openPrivacyPolicy) {
+                    Button(action: { showingPrivacyPolicy = true }) {
                         HStack {
                             Image(systemName: "hand.raised.fill")
                                 .foregroundColor(.green)
                                 .frame(width: 20)
                             
-                            Text("Privacy Policy")
+                            Text(NSLocalizedString("Privacy Policy", comment: "Privacy Policy label"))
                                 .foregroundColor(.primary)
                         }
                     }
                     
                     // Terms of Service
-                    Button(action: openTermsOfService) {
+                    Button(action: { showingTermsOfService = true }) {
                         HStack {
                             Image(systemName: "doc.text.fill")
                                 .foregroundColor(.purple)
                                 .frame(width: 20)
                             
-                            Text("Terms of Service")
+                            Text(NSLocalizedString("Terms of Service", comment: "Terms of Service label"))
                                 .foregroundColor(.primary)
                         }
                     }
                 }
             }
-            .navigationTitle("Settings")
+            .navigationTitle(NSLocalizedString("Settings", comment: "Settings navigation title"))
+            .sheet(isPresented: $showingDisclaimer) {
+                VStack(spacing: 24) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .resizable()
+                        .frame(width: 48, height: 48)
+                        .foregroundColor(.orange)
+                    Text(NSLocalizedString("Disclaimer", comment: "Disclaimer label"))
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    Text(NSLocalizedString("Infinitum Water Eject is for preventive measures only. It does not guarantee device repair. Use at your own risk. Severe water damage should be handled by professionals.", comment: "Disclaimer text"))
+                        .font(.body)
+                        .multilineTextAlignment(.center)
+                        .padding()
+                    Button(NSLocalizedString("Close", comment: "Close button")) { showingDisclaimer = false }
+                        .padding(.top)
+                }
+                .padding()
+            }
+            .sheet(isPresented: $showingPrivacyPolicy) {
+                SupportView(title: "Privacy Policy", content: "")
+            }
+            .sheet(isPresented: $showingTermsOfService) {
+                SupportView(title: "Terms of Service", content: "")
+            }
             .sheet(isPresented: $showingTips) {
                 TipsView()
             }
