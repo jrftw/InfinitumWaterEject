@@ -76,6 +76,31 @@ class NotificationService: ObservableObject {
         UNUserNotificationCenter.current().add(request)
     }
     
+    func scheduleCustomReminder(at time: Date) {
+        let center = UNUserNotificationCenter.current()
+        let content = UNMutableNotificationContent()
+        content.title = "Water Ejection Reminder"
+        content.body = "Custom reminder: Time to check your devices!"
+        content.sound = .default
+        content.badge = 1
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.hour, .minute], from: time)
+        let identifier = "customReminder_\(components.hour ?? 0)_\(components.minute ?? 0)"
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
+        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+        center.add(request) { error in
+            if let error = error {
+                print("Failed to schedule custom reminder: \(error)")
+            }
+        }
+    }
+    func cancelCustomReminder(at time: Date) {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.hour, .minute], from: time)
+        let identifier = "customReminder_\(components.hour ?? 0)_\(components.minute ?? 0)"
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
+    }
+    
     func cancelAllNotifications() {
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
     }

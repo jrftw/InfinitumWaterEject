@@ -42,6 +42,13 @@ struct SupportHelpView: View {
                     AdditionalResourcesSection()
                         .padding(.horizontal)
                     
+                    // Banner Ad at the bottom
+                    VStack(spacing: 0) {
+                        ConditionalBannerAdView(adUnitId: AdMobService.shared.getBannerAdUnitId())
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, 20)
+                    
                     Spacer(minLength: 20)
                 }
                 .padding(.vertical)
@@ -395,7 +402,7 @@ struct MailView: UIViewControllerRepresentable {
             let vc = MFMailComposeViewController()
             vc.mailComposeDelegate = context.coordinator
             vc.setToRecipients(["support@infinitumlive.com"])
-            vc.setSubject("Infinitum Water Eject Support Request")
+            vc.setSubject("Priority Subscriber - Infinitum Water Eject User")
             return vc
         } else {
             // Fallback view when mail is not available

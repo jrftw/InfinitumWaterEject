@@ -1,19 +1,21 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 @available(iOS 16.0, *)
 struct SettingsView: View {
     @StateObject private var coreDataService = CoreDataService.shared
     @StateObject private var notificationService = NotificationService.shared
+    @StateObject private var subscriptionService = SubscriptionService.shared
     @EnvironmentObject private var themeManager: ThemeManager
-    // @StateObject private var subscriptionService = SubscriptionService.shared
     
     @State private var showingTips = false
     @State private var showingSupport = false
     @State private var showingChangeLog = false
-    // @State private var showingPremiumOffer = false
+    @State private var showingPremiumOffer = false
     @State private var showingDisclaimer = false
     @State private var showingPrivacyPolicy = false
     @State private var showingTermsOfService = false
+    @State private var customReminders: [Date] = []
     
     // Computed property to always get valid settings
     private var userSettings: UserSettings {
@@ -49,8 +51,6 @@ struct SettingsView: View {
                                 .font(.headline)
                                 .fontWeight(.semibold)
                             
-                            // Premium Status - COMMENTED OUT FOR NOW
-                            /*
                             if subscriptionService.isPremium {
                                 HStack {
                                     Image(systemName: "crown.fill")
@@ -66,17 +66,10 @@ struct SettingsView: View {
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
-                            */
-                            
-                            Text(NSLocalizedString("Free User", comment: "Free user label"))
-                                .font(.caption)
-                                .foregroundColor(.secondary)
                         }
                         
                         Spacer()
                         
-                        // Upgrade Button - COMMENTED OUT FOR NOW
-                        /*
                         if !subscriptionService.isPremium {
                             Button("Upgrade to Premium") {
                                 showingPremiumOffer = true
@@ -84,7 +77,6 @@ struct SettingsView: View {
                             .font(.caption)
                             .foregroundColor(.blue)
                         }
-                        */
                     }
                     .padding(.vertical, 4)
                 }
@@ -187,6 +179,33 @@ struct SettingsView: View {
                                     notificationService.scheduleDailyReminder(at: newTime)
                                 }
                             ), displayedComponents: .hourAndMinute)
+                        }
+                        // Custom Notification Schedules
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Custom Reminders")
+                                .font(.headline)
+                            ForEach(customReminders.indices, id: \.self) { idx in
+                                HStack {
+                                    DatePicker("", selection: Binding(
+                                        get: { customReminders[idx] },
+                                        set: { newDate in
+                                            customReminders[idx] = newDate
+                                            scheduleCustomReminder(at: newDate)
+                                        }
+                                    ), displayedComponents: .hourAndMinute)
+                                    Button(action: {
+                                        removeCustomReminder(at: idx)
+                                    }) {
+                                        Image(systemName: "minus.circle.fill").foregroundColor(.red)
+                                    }
+                                }
+                            }
+                            Button(action: addCustomReminder) {
+                                HStack {
+                                    Image(systemName: "plus.circle.fill").foregroundColor(.green)
+                                    Text("Add Reminder")
+                                }
+                            }
                         }
                     }
                     
@@ -315,6 +334,15 @@ struct SettingsView: View {
                         }
                     }
                 }
+                
+                // Banner Ad Section
+                Section {
+                    VStack(spacing: 0) {
+                        ConditionalBannerAdView(adUnitId: AdMobService.shared.getBannerAdUnitId())
+                    }
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+                }
             }
             .navigationTitle(NSLocalizedString("Settings", comment: "Settings navigation title"))
             .navigationViewStyle(StackNavigationViewStyle())
@@ -364,9 +392,12 @@ struct SettingsView: View {
                     .padding()
                 }
             }
-            .sheet(isPresented: $showingChangeLog) {
-                ChangeLogView()
-            }
+                    .sheet(isPresented: $showingChangeLog) {
+            ChangeLogView()
+        }
+        .sheet(isPresented: $showingPremiumOffer) {
+            PremiumOfferView()
+        }
             // .sheet(isPresented: $showingPremiumOffer) {
             //     PremiumOfferView()
             // }
@@ -382,8 +413,35 @@ struct SettingsView: View {
     }
     
     private func exportData() {
-        // Implementation for data export
-        print("Export data functionality")
+        let sessions = CoreDataService.shared.getWaterEjectionSessions()
+        let csvString = generateCSV(from: sessions)
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("WaterEjectionSessions.csv")
+        do {
+            try csvString.write(to: tempURL, atomically: true, encoding: .utf8)
+            let activityVC = UIActivityViewController(activityItems: [tempURL], applicationActivities: nil)
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let rootVC = windowScene.windows.first?.rootViewController {
+                rootVC.present(activityVC, animated: true, completion: nil)
+            }
+        } catch {
+            print("Failed to export CSV: \(error)")
+        }
+    }
+
+    private func generateCSV(from sessions: [WaterEjectionSession]) -> String {
+        var csv = "Session ID,Device Type,Intensity,Duration (s),Start Time,End Time,Completed\n"
+        let formatter = ISO8601DateFormatter()
+        for session in sessions {
+            let id = session.id.uuidString
+            let device = session.deviceType.rawValue
+            let intensity = session.intensityLevel.rawValue
+            let duration = String(format: "%.1f", session.duration)
+            let start = formatter.string(from: session.startTime)
+            let end = session.endTime != nil ? formatter.string(from: session.endTime!) : ""
+            let completed = session.isCompleted ? "Yes" : "No"
+            csv += "\(id),\(device),\(intensity),\(duration),\(start),\(end),\(completed)\n"
+        }
+        return csv
     }
     
     private func clearAllData() {
@@ -405,6 +463,22 @@ struct SettingsView: View {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
         return "\(version) Build \(build)"
+    }
+    
+    private func addCustomReminder() {
+        let nextHour = Calendar.current.date(byAdding: .hour, value: 1, to: Date()) ?? Date()
+        customReminders.append(nextHour)
+        scheduleCustomReminder(at: nextHour)
+    }
+    private func removeCustomReminder(at index: Int) {
+        if customReminders.indices.contains(index) {
+            let date = customReminders[index]
+            customReminders.remove(at: index)
+            notificationService.cancelCustomReminder(at: date)
+        }
+    }
+    private func scheduleCustomReminder(at date: Date) {
+        notificationService.scheduleCustomReminder(at: date)
     }
 }
 

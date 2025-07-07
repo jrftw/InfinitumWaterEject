@@ -7,14 +7,14 @@ import SwiftUI
 
 struct UserSettings: Codable {
     var theme: AppTheme
-    // var isPremium: Bool
+    var isPremium: Bool
     var notificationsEnabled: Bool
     var dailyReminderTime: Date
     var weeklyGoal: Int
     
     init(theme: AppTheme = .auto, isPremium: Bool = false, notificationsEnabled: Bool = true, dailyReminderTime: Date = Calendar.current.date(from: DateComponents(hour: 9, minute: 0)) ?? Date(), weeklyGoal: Int = 7) {
         self.theme = theme
-        // self.isPremium = isPremium
+        self.isPremium = isPremium
         self.notificationsEnabled = notificationsEnabled
         self.dailyReminderTime = dailyReminderTime
         self.weeklyGoal = weeklyGoal

@@ -57,6 +57,13 @@ struct HistoryView: View {
                                         .padding(.horizontal)
                                 }
                             }
+                            
+                            // Banner Ad at the bottom
+                            VStack(spacing: 0) {
+                                ConditionalBannerAdView(adUnitId: AdMobService.shared.getBannerAdUnitId())
+                            }
+                            .padding(.horizontal)
+                            .padding(.top, 20)
                         }
                         .padding(.vertical)
                     }

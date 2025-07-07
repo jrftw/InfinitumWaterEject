@@ -1,6 +1,9 @@
 import Foundation
 import CoreData
 import SwiftUI
+#if canImport(WidgetKit)
+import WidgetKit
+#endif
 
 class CoreDataService: ObservableObject {
     static let shared = CoreDataService()
@@ -45,7 +48,7 @@ class CoreDataService: ObservableObject {
             }
             
             entity.theme = settings.theme.rawValue
-            // entity.isPremium = settings.isPremium
+            entity.isPremium = settings.isPremium
             entity.notificationsEnabled = settings.notificationsEnabled
             entity.dailyReminderTime = settings.dailyReminderTime
             entity.weeklyGoal = Int32(settings.weeklyGoal)
@@ -64,7 +67,7 @@ class CoreDataService: ObservableObject {
             if let entity = results.first {
                 return UserSettings(
                     theme: AppTheme(rawValue: entity.theme ?? "auto") ?? .auto,
-                    // isPremium: entity.isPremium,
+                    isPremium: entity.isPremium,
                     notificationsEnabled: entity.notificationsEnabled,
                     dailyReminderTime: entity.dailyReminderTime ?? Calendar.current.date(from: DateComponents(hour: 9, minute: 0)) ?? Date(),
                     weeklyGoal: Int(entity.weeklyGoal)
@@ -94,6 +97,43 @@ class CoreDataService: ObservableObject {
         entity.isCompleted = session.isCompleted
         
         save()
+        
+        // Update widget data
+        updateWidgetData()
+    }
+    
+    private func updateWidgetData() {
+        let sessions = getWaterEjectionSessions()
+        let totalSessions = sessions.count
+        let completedSessions = sessions.filter { $0.isCompleted }.count
+        
+        // Calculate weekly sessions
+        let calendar = Calendar.current
+        let weekAgo = calendar.date(byAdding: .day, value: -7, to: Date()) ?? Date()
+        let weeklySessions = sessions.filter { $0.startTime >= weekAgo }.count
+        
+        // Calculate completion rate
+        let completionRate = totalSessions > 0 ? (Double(completedSessions) / Double(totalSessions)) * 100 : 0
+        
+        // Calculate average duration
+        let totalDuration = sessions.reduce(0) { $0 + $1.duration }
+        let averageDuration = totalSessions > 0 ? totalDuration / Double(totalSessions) : 0
+        
+        // Get last session date
+        let lastSession = sessions.first?.startTime ?? Date()
+        
+        // Save to UserDefaults for widget
+        let userDefaults = UserDefaults(suiteName: "group.com.infinitumimagery.watereject")
+        userDefaults?.set(totalSessions, forKey: "totalSessions")
+        userDefaults?.set(weeklySessions, forKey: "weeklySessions")
+        userDefaults?.set(completionRate, forKey: "completionRate")
+        userDefaults?.set(averageDuration, forKey: "averageDuration")
+        userDefaults?.set(lastSession, forKey: "lastSessionDate")
+        
+        // Trigger widget refresh
+        if #available(iOS 14.0, *) {
+            WidgetCenter.shared.reloadAllTimelines()
+        }
     }
     
     func getWaterEjectionSessions() -> [WaterEjectionSession] {

@@ -6,11 +6,52 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		7936CF1D2E1C6D7C009161CD /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 7936CF1C2E1C6D7C009161CD /* GoogleMobileAds */; };
+		7936CF3B2E1C7173009161CD /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7936CF3A2E1C7173009161CD /* WidgetKit.framework */; };
+		7936CF3D2E1C7173009161CD /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7936CF3C2E1C7173009161CD /* SwiftUI.framework */; };
+		7936CF4E2E1C7174009161CD /* WaterEjectWidgetExtensionExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7936CF382E1C7173009161CD /* WaterEjectWidgetExtensionExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		7936CF4C2E1C7174009161CD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 79C2FF4F2E1976D900508161 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7936CF372E1C7173009161CD;
+			remoteInfo = WaterEjectWidgetExtensionExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		7936CF532E1C7174009161CD /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				7936CF4E2E1C7174009161CD /* WaterEjectWidgetExtensionExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		7936CF382E1C7173009161CD /* WaterEjectWidgetExtensionExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WaterEjectWidgetExtensionExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		7936CF3A2E1C7173009161CD /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		7936CF3C2E1C7173009161CD /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		79C2FF572E1976D900508161 /* Infinitum Water Eject.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Infinitum Water Eject.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		7936CF522E1C7174009161CD /* Exceptions for "WaterEjectWidgetExtension" folder in "WaterEjectWidgetExtensionExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 7936CF372E1C7173009161CD /* WaterEjectWidgetExtensionExtension */;
+		};
 		79C2FF642E1976DA00508161 /* Exceptions for "Infinitum Water Eject" folder in "Infinitum Water Eject" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -21,6 +62,14 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		7936CF3E2E1C7173009161CD /* WaterEjectWidgetExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				7936CF522E1C7174009161CD /* Exceptions for "WaterEjectWidgetExtension" folder in "WaterEjectWidgetExtensionExtension" target */,
+			);
+			path = WaterEjectWidgetExtension;
+			sourceTree = "<group>";
+		};
 		79C2FF592E1976D900508161 /* Infinitum Water Eject */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -32,20 +81,41 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		7936CF352E1C7173009161CD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7936CF3D2E1C7173009161CD /* SwiftUI.framework in Frameworks */,
+				7936CF3B2E1C7173009161CD /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		79C2FF542E1976D900508161 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7936CF1D2E1C6D7C009161CD /* GoogleMobileAds in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		7936CF392E1C7173009161CD /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7936CF3A2E1C7173009161CD /* WidgetKit.framework */,
+				7936CF3C2E1C7173009161CD /* SwiftUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		79C2FF4E2E1976D900508161 = {
 			isa = PBXGroup;
 			children = (
 				79C2FF592E1976D900508161 /* Infinitum Water Eject */,
+				7936CF3E2E1C7173009161CD /* WaterEjectWidgetExtension */,
+				7936CF392E1C7173009161CD /* Frameworks */,
 				79C2FF582E1976D900508161 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -54,6 +124,7 @@
 			isa = PBXGroup;
 			children = (
 				79C2FF572E1976D900508161 /* Infinitum Water Eject.app */,
+				7936CF382E1C7173009161CD /* WaterEjectWidgetExtensionExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -61,6 +132,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		7936CF372E1C7173009161CD /* WaterEjectWidgetExtensionExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7936CF4F2E1C7174009161CD /* Build configuration list for PBXNativeTarget "WaterEjectWidgetExtensionExtension" */;
+			buildPhases = (
+				7936CF342E1C7173009161CD /* Sources */,
+				7936CF352E1C7173009161CD /* Frameworks */,
+				7936CF362E1C7173009161CD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				7936CF3E2E1C7173009161CD /* WaterEjectWidgetExtension */,
+			);
+			name = WaterEjectWidgetExtensionExtension;
+			packageProductDependencies = (
+			);
+			productName = WaterEjectWidgetExtensionExtension;
+			productReference = 7936CF382E1C7173009161CD /* WaterEjectWidgetExtensionExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		79C2FF562E1976D900508161 /* Infinitum Water Eject */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 79C2FF652E1976DA00508161 /* Build configuration list for PBXNativeTarget "Infinitum Water Eject" */;
@@ -68,16 +161,19 @@
 				79C2FF532E1976D900508161 /* Sources */,
 				79C2FF542E1976D900508161 /* Frameworks */,
 				79C2FF552E1976D900508161 /* Resources */,
+				7936CF532E1C7174009161CD /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				7936CF4D2E1C7174009161CD /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				79C2FF592E1976D900508161 /* Infinitum Water Eject */,
 			);
 			name = "Infinitum Water Eject";
 			packageProductDependencies = (
+				7936CF1C2E1C6D7C009161CD /* GoogleMobileAds */,
 			);
 			productName = "Infinitum Water Eject";
 			productReference = 79C2FF572E1976D900508161 /* Infinitum Water Eject.app */;
@@ -93,6 +189,9 @@
 				LastSwiftUpdateCheck = 1640;
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
+					7936CF372E1C7173009161CD = {
+						CreatedOnToolsVersion = 16.4;
+					};
 					79C2FF562E1976D900508161 = {
 						CreatedOnToolsVersion = 16.4;
 					};
@@ -116,17 +215,28 @@
 			);
 			mainGroup = 79C2FF4E2E1976D900508161;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				7936CF1B2E1C6D7C009161CD /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 79C2FF582E1976D900508161 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				79C2FF562E1976D900508161 /* Infinitum Water Eject */,
+				7936CF372E1C7173009161CD /* WaterEjectWidgetExtensionExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		7936CF362E1C7173009161CD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		79C2FF552E1976D900508161 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -137,6 +247,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		7936CF342E1C7173009161CD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		79C2FF532E1976D900508161 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -146,7 +263,71 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		7936CF4D2E1C7174009161CD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7936CF372E1C7173009161CD /* WaterEjectWidgetExtensionExtension */;
+			targetProxy = 7936CF4C2E1C7174009161CD /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		7936CF502E1C7174009161CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = AD7SJSPX55;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WaterEjectWidgetExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WaterEjectWidgetExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = "Infinitum-Imagery-LLC.Infinitum-Water-Eject.WaterEjectWidgetExtension";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		7936CF512E1C7174009161CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = AD7SJSPX55;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WaterEjectWidgetExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WaterEjectWidgetExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = "Infinitum-Imagery-LLC.Infinitum-Water-Eject.WaterEjectWidgetExtension";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		79C2FF662E1976DA00508161 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -154,7 +335,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Infinitum Water Eject/Infinitum_Water_Eject.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = AD7SJSPX55;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -171,7 +352,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "Infinitum-Imagery-LLC.Infinitum-Water-Eject";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -187,7 +368,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Infinitum Water Eject/Infinitum_Water_Eject.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = AD7SJSPX55;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -204,7 +385,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "Infinitum-Imagery-LLC.Infinitum-Water-Eject";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -337,6 +518,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		7936CF4F2E1C7174009161CD /* Build configuration list for PBXNativeTarget "WaterEjectWidgetExtensionExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7936CF502E1C7174009161CD /* Debug */,
+				7936CF512E1C7174009161CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		79C2FF522E1976D900508161 /* Build configuration list for PBXProject "Infinitum Water Eject" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -356,6 +546,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		7936CF1B2E1C6D7C009161CD /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.6.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		7936CF1C2E1C6D7C009161CD /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7936CF1B2E1C6D7C009161CD /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 79C2FF4F2E1976D900508161 /* Project object */;
 }

@@ -10,6 +10,7 @@ import SwiftUI
 @main
 struct Infinitum_Water_EjectApp: App {
     @StateObject private var themeManager = ThemeManager.shared
+    @StateObject private var adMobService = AdMobService.shared
     
     var body: some Scene {
         WindowGroup {

@@ -10,7 +10,14 @@ struct ChangeLogView: View {
                     .fontWeight(.bold)
                     .padding(.top)
                 
-                ChangeLogSection(version: getAppVersion(), date: "2025-07-07", changes: [
+                ChangeLogSection(version: "1.0.1 Build 1", date: "2025-07-08", changes: [
+                    "Updated app version to 1.0.1 Build 1",
+                    "Improved version synchronization across all targets",
+                    "Enhanced build number management",
+                    "Updated change log with latest version information"
+                ])
+                
+                ChangeLogSection(version: "1.0.0 Build 2", date: "2025-07-07", changes: [
                     "Fixed iOS version compatibility issues",
                     "Added iOS 16.0+ availability checks for all views",
                     "Resolved app crashes on older iOS versions",

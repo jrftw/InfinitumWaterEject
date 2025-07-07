@@ -3,14 +3,14 @@ import SwiftUI
 @available(iOS 16.0, *)
 struct MainEjectionView: View {
     @StateObject private var waterEjectionService = WaterEjectionService.shared
-    // @StateObject private var subscriptionService = SubscriptionService.shared
+    @StateObject private var subscriptionService = SubscriptionService.shared
     
     @State private var selectedDevice: DeviceType = detectCurrentDevice()
     @State private var selectedIntensity: IntensityLevel = .medium
     @State private var showingDevicePicker = false
     @State private var showingIntensityPicker = false
     @State private var showingTips = false
-    // @State private var showingPremiumOffer = false
+    @State private var showingPremiumOffer = false
     
     var body: some View {
         NavigationStack {
@@ -184,6 +184,12 @@ struct MainEjectionView: View {
                                 .background(Color.green)
                                 .cornerRadius(12)
                             }
+                            
+                            // Banner Ad under Complete Session button
+                            VStack(spacing: 0) {
+                                ConditionalBannerAdView(adUnitId: AdMobService.shared.getBannerAdUnitId())
+                            }
+                            .padding(.top, 12)
                         } else {
                             // Start Button
                             Button(action: startEjection) {
@@ -224,14 +230,21 @@ struct MainEjectionView: View {
                         .padding(.horizontal)
                     }
                     
-                    // Premium Banner (if not premium) - COMMENTED OUT FOR NOW
-                    /*
+                    // Premium Banner (if not premium)
                     if !subscriptionService.isPremium {
                         PremiumBannerView {
                             showingPremiumOffer = true
                         }
                     }
-                    */
+                    
+                    // Banner Ad (only show when not actively ejecting)
+                    if !waterEjectionService.isPlaying {
+                        VStack(spacing: 0) {
+                            ConditionalBannerAdView(adUnitId: AdMobService.shared.getBannerAdUnitId())
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 20)
+                    }
                     
                     Spacer(minLength: 20)
                 }
@@ -246,9 +259,12 @@ struct MainEjectionView: View {
             .sheet(isPresented: $showingIntensityPicker) {
                 IntensityPickerView(selectedIntensity: $selectedIntensity)
             }
-            .sheet(isPresented: $showingTips) {
-                TipsView()
-            }
+                    .sheet(isPresented: $showingTips) {
+            TipsView()
+        }
+        .sheet(isPresented: $showingPremiumOffer) {
+            PremiumOfferView()
+        }
             // .sheet(isPresented: $showingPremiumOffer) {
             //     PremiumOfferView()
             // }
@@ -371,41 +387,7 @@ struct TimerDisplayView: View {
     }
 }
 
-// Premium Banner View - COMMENTED OUT FOR NOW
-/*
-struct PremiumBannerView: View {
-    let onUpgrade: () -> Void
-    
-    var body: some View {
-        Button(action: onUpgrade) {
-            HStack {
-                Image(systemName: "crown.fill")
-                    .foregroundColor(.yellow)
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Upgrade to Premium")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                    
-                    Text("Unlimited sessions & advanced features")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                Spacer()
-                
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            .padding()
-            .background(Color.yellow.opacity(0.1))
-            .cornerRadius(12)
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-}
-*/
+
 
 #Preview {
     if #available(iOS 16.0, *) {

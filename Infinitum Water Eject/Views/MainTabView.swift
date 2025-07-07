@@ -2,7 +2,7 @@ import SwiftUI
 
 @available(iOS 16.0, *)
 struct MainTabView: View {
-    // @StateObject private var subscriptionService = SubscriptionService.shared
+    @StateObject private var subscriptionService = SubscriptionService.shared
     @State private var selectedTab = 0
     
     var body: some View {

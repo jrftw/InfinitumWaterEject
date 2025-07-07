@@ -1,4 +1,3 @@
-/*
 import SwiftUI
 import StoreKit
 
@@ -8,6 +7,7 @@ struct PremiumOfferView: View {
     @StateObject private var subscriptionService = SubscriptionService.shared
     @State private var showingPurchaseAlert = false
     @State private var purchaseError: String?
+    @State private var selectedProductId: String?
     
     var body: some View {
         NavigationStack {
@@ -38,7 +38,7 @@ struct PremiumOfferView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
                         VStack(spacing: 12) {
-                            ForEach(subscriptionService.getPremiumFeatures(), id: \.self) { feature in
+                            ForEach(subscriptionService.getPremiumFeatures().filter { $0 != "Real-time device monitoring" }, id: \.self) { feature in
                                 HStack {
                                     Image(systemName: "checkmark.circle.fill")
                                         .foregroundColor(.green)
@@ -57,76 +57,37 @@ struct PremiumOfferView: View {
                         .cornerRadius(12)
                     }
                     
-                    // Pricing
+                    // Pricing Options
                     VStack(spacing: 16) {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Monthly Premium")
-                                    .font(.headline)
-                                    .fontWeight(.semibold)
-                                
-                                Text("Cancel anytime")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            
-                            Spacer()
-                            
-                            VStack(alignment: .trailing, spacing: 4) {
-                                Text("$0.99")
-                                    .font(.title2)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(.blue)
-                                
-                                Text("per month")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                        .padding()
-                        .background(Color.blue.opacity(0.1))
-                        .cornerRadius(12)
-                    }
-                    
-                    // Benefits
-                    VStack(spacing: 16) {
-                        Text("Why Choose Premium?")
+                        Text("Choose Your Plan")
                             .font(.headline)
                             .fontWeight(.semibold)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
-                        VStack(spacing: 12) {
-                            BenefitRow(
-                                icon: "infinity",
-                                title: "Unlimited Sessions",
-                                description: "No daily limits on water ejection sessions"
-                            )
-                            
-                            BenefitRow(
-                                icon: "chart.bar.fill",
-                                title: "Advanced Analytics",
-                                description: "Detailed insights into your device protection habits"
-                            )
-                            
-                            BenefitRow(
-                                icon: "xmark.circle.fill",
-                                title: "Ad-Free Experience",
-                                description: "Enjoy the app without any advertisements"
-                            )
-                            
-                            BenefitRow(
-                                icon: "person.crop.circle.badge.checkmark",
-                                title: "Priority Support",
-                                description: "Get help faster with premium support"
-                            )
+                        if subscriptionService.isLoading {
+                            ProgressView("Loading plans...")
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                        } else {
+                            VStack(spacing: 12) {
+                                ForEach(subscriptionService.products, id: \.productIdentifier) { product in
+                                    PricingOptionView(
+                                        product: product,
+                                        isSelected: selectedProductId == product.productIdentifier,
+                                        action: {
+                                            selectedProductId = product.productIdentifier
+                                        }
+                                    )
+                                }
+                            }
                         }
                     }
                     
-                    // Action Buttons
+                    // Purchase Button
                     VStack(spacing: 12) {
                         Button(action: purchasePremium) {
                             HStack {
-                                if subscriptionService.isLoading {
+                                if subscriptionService.purchaseInProgress {
                                     ProgressView()
                                         .progressViewStyle(CircularProgressViewStyle(tint: .white))
                                         .scaleEffect(0.8)
@@ -134,16 +95,16 @@ struct PremiumOfferView: View {
                                     Image(systemName: "crown.fill")
                                 }
                                 
-                                Text("Start Premium Trial")
+                                Text(selectedProductId == nil ? "Select a Plan" : "Start Premium")
                                     .fontWeight(.semibold)
                             }
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.blue)
+                            .background(selectedProductId == nil ? Color.gray : Color.blue)
                             .cornerRadius(12)
                         }
-                        .disabled(subscriptionService.isLoading)
+                        .disabled(subscriptionService.purchaseInProgress || selectedProductId == nil)
                         
                         Button(action: subscriptionService.restorePurchases) {
                             Text("Restore Purchases")
@@ -152,6 +113,63 @@ struct PremiumOfferView: View {
                         }
                         .disabled(subscriptionService.isLoading)
                     }
+                    
+                    // Apple Watch Widget Preview
+                    VStack(spacing: 16) {
+                        Text("Apple Watch Widget")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        HStack(spacing: 16) {
+                            VStack(spacing: 8) {
+                                Image(systemName: "applewatch")
+                                    .font(.system(size: 40))
+                                    .foregroundColor(.blue)
+                                
+                                Text("Quick Eject")
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                            }
+                            .frame(width: 80, height: 80)
+                            .background(Color.blue.opacity(0.1))
+                            .cornerRadius(12)
+                            
+                            VStack(spacing: 8) {
+                                Image(systemName: "chart.bar.fill")
+                                    .font(.system(size: 40))
+                                    .foregroundColor(.green)
+                                
+                                Text("Stats")
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                            }
+                            .frame(width: 80, height: 80)
+                            .background(Color.green.opacity(0.1))
+                            .cornerRadius(12)
+                            
+                            VStack(spacing: 8) {
+                                Image(systemName: "bell.fill")
+                                    .font(.system(size: 40))
+                                    .foregroundColor(.orange)
+                                
+                                Text("Reminders")
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                            }
+                            .frame(width: 80, height: 80)
+                            .background(Color.orange.opacity(0.1))
+                            .cornerRadius(12)
+                        }
+                        
+                        Text("Get instant access to water ejection controls and session statistics right on your Apple Watch")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(12)
                     
                     // Terms
                     Text("By subscribing, you agree to our Terms of Service and Privacy Policy. Subscriptions automatically renew unless cancelled at least 24 hours before the renewal date.")
@@ -175,7 +193,7 @@ struct PremiumOfferView: View {
                     dismiss()
                 }
             } message: {
-                Text("Welcome to Premium! You now have access to all premium features.")
+                Text("Welcome to Premium! You now have access to all premium features including Apple Watch widgets.")
             }
             .alert("Purchase Failed", isPresented: .constant(purchaseError != nil)) {
                 Button("OK") {
@@ -186,17 +204,78 @@ struct PremiumOfferView: View {
                     Text(error)
                 }
             }
+            .onReceive(NotificationCenter.default.publisher(for: .purchaseSuccessful)) { _ in
+                showingPurchaseAlert = true
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .purchaseFailed)) { notification in
+                purchaseError = notification.object as? String ?? "Purchase failed"
+            }
+            .onAppear {
+                if selectedProductId == nil && !subscriptionService.products.isEmpty {
+                    selectedProductId = subscriptionService.products.first?.productIdentifier
+                }
+            }
         }
     }
     
     private func purchasePremium() {
-        subscriptionService.purchasePremium { success, error in
+        guard let productId = selectedProductId else { return }
+        
+        subscriptionService.purchasePremium(productId: productId) { success, error in
             if success {
                 showingPurchaseAlert = true
             } else {
                 purchaseError = error ?? "Purchase failed"
             }
         }
+    }
+}
+
+@available(iOS 16.0, *)
+struct PricingOptionView: View {
+    let product: SKProduct
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(product.localizedTitle)
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+                    
+                    Text(product.localizedDescription)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+                
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text(product.localizedPrice)
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .foregroundColor(.primary)
+                    
+                    if product.productIdentifier.contains("yearly") {
+                        Text("Save 50%")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundColor(.green)
+                    }
+                }
+            }
+            .padding()
+            .background(isSelected ? Color.blue.opacity(0.1) : Color(.systemGray6))
+            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 2)
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 
@@ -231,7 +310,7 @@ struct BenefitRow: View {
     }
 }
 
+@available(iOS 16.0, *)
 #Preview {
     PremiumOfferView()
-}
-*/ 
+} 

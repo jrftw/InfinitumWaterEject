@@ -40,6 +40,12 @@ struct TipsView: View {
                         case .other:
                             OtherDeviceTipsView()
                         }
+                        
+                        // Banner Ad at the bottom
+                        VStack(spacing: 0) {
+                            ConditionalBannerAdView(adUnitId: AdMobService.shared.getBannerAdUnitId())
+                        }
+                        .padding(.top, 20)
                     }
                     .padding()
                 }

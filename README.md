@@ -1,44 +1,51 @@
 # Infinitum Water Eject
 
-A modern iOS app designed to help eject water from electronic devices using scientifically-tuned sound frequencies. Built with SwiftUI and Core Data, featuring a beautiful interface, comprehensive device support, and premium subscription features.
+A comprehensive iOS app designed to protect your devices from water damage using optimized sound frequencies. The app generates specific audio frequencies that help dislodge water from device speakers and other components.
 
 ## Features
 
 ### Core Functionality
-- **Water Ejection**: Generate specific sound frequencies to dislodge water from device speakers and internal components
-- **Device Support**: Optimized frequencies for iPhone, iPad, MacBook, Apple Watch, AirPods, and other devices
-- **Intensity Levels**: Four levels (Low, Medium, High, Emergency) with appropriate durations and frequencies
-- **Real-time Timer**: Visual progress tracking with circular progress indicator and countdown timer
-- **Session Management**: Complete session history with detailed analytics and statistics
+- **Multi-Device Support**: Optimized frequencies for iPhone, iPad, MacBook, Apple Watch, AirPods, and other devices
+- **Intensity Levels**: Multiple ejection intensities (Low, Medium, High, Emergency, Realtime)
+- **Real-time Control**: Dynamic frequency adjustment during active sessions
+- **Session Tracking**: Complete history and analytics of all water ejection sessions
+- **Safety Features**: Built-in safety checks and user guidance
 
-### User Interface
-- **Modern Design**: Clean, intuitive interface with support for light, dark, and auto themes
-- **Device Selection**: Easy device picker with icons and descriptions
-- **Intensity Picker**: Visual intensity selection with duration information
-- **Progress Tracking**: Real-time timer display with progress circle and percentage
-- **Responsive Controls**: Start, stop, and complete session buttons
-
-### Premium Features
+### Premium Features (Subscription Required)
+- **Ad-Free Experience**: Remove all advertisements
 - **Unlimited Sessions**: No daily limits on water ejection sessions
-- **Advanced Analytics**: Detailed session history and device statistics
-- **Custom Notifications**: Personalized reminders and alerts
-- **Advanced Settings**: Fine-tune frequency and duration settings
-- **Ad-Free Experience**: Enjoy the app without advertisements
-- **Priority Support**: Get help faster with premium support
+- **Advanced Analytics**: Detailed insights into device protection habits
+- **Apple Watch Widgets**: Quick access to controls and statistics on your Apple Watch
+- **Apple Watch App**: Full water ejection functionality on Apple Watch
+- **Custom Frequency Presets**: Save and reuse custom frequency settings
+- **Export Session Data**: Backup and analyze your session history
+- **Cloud Backup & Sync**: Secure cloud storage for your data (uses Apple iCloud/CloudKit free tier, no ongoing cost)
+- **Priority Customer Support**: Get help faster with premium support
+- **Custom Notification Schedules**: Personalized reminder settings
 
-### Safety & Support
-- **Comprehensive Tips**: Device-specific safety tips and best practices
-- **FAQ Section**: Frequently asked questions with detailed answers
-- **Contact Support**: Built-in support form with email integration
-- **Privacy Policy**: Complete privacy policy with data handling information
-- **Terms of Service**: Comprehensive terms and conditions
+### Apple Watch Integration
+- **Watch App**: Complete water ejection functionality on Apple Watch
+- **Complications**: Quick access to session statistics on watch faces
+- **Widgets**: Multiple widget sizes showing session data and quick controls
+- **Real-time Sync**: Instant synchronization between iPhone and Apple Watch
 
-### Data & Analytics
-- **Session History**: Complete record of all water ejection sessions
-- **Statistics Dashboard**: Overview of usage patterns and success rates
-- **Device Analytics**: Breakdown of device usage and effectiveness
-- **Intensity Analysis**: Analysis of intensity level usage and completion rates
-- **Export Capabilities**: Data export for backup and analysis
+### Widget Support
+- **Small Widget**: Session count and last activity
+- **Medium Widget**: Session statistics and success rate
+- **Large Widget**: Comprehensive stats with detailed metrics
+- **Real-time Updates**: Widgets update automatically with new session data
+
+## Subscription Plans
+
+### Monthly Premium
+- $0.99/month
+- All premium features included
+- Cancel anytime
+
+### Yearly Premium
+- $4.99/year (Save 50%)
+- All premium features included
+- Best value option
 
 ## Technical Details
 
@@ -48,6 +55,8 @@ A modern iOS app designed to help eject water from electronic devices using scie
 - **AVFoundation**: Audio generation and playback
 - **StoreKit**: In-app purchase and subscription management
 - **UserNotifications**: Local notification system
+- **WidgetKit**: iOS and watchOS widget support
+- **ClockKit**: Apple Watch complications
 
 ### Audio Generation
 - **Frequency Optimization**: Device-specific frequencies for maximum effectiveness
@@ -64,13 +73,21 @@ A modern iOS app designed to help eject water from electronic devices using scie
 ### Services
 - **WaterEjectionService**: Core ejection logic and audio management
 - **CoreDataService**: Data persistence and management
-- **SubscriptionService**: Premium feature management
+- **SubscriptionService**: Premium feature management with StoreKit integration
 - **NotificationService**: Local notification handling
+- **AdMobService**: Advertisement management (disabled for premium users)
+
+### Widget & Watch Integration
+- **Shared UserDefaults**: Data synchronization between app and widgets
+- **Timeline Provider**: Real-time widget updates
+- **Complication Support**: Apple Watch face complications
+- **Watch App**: Native Apple Watch application
 
 ## Installation
 
 ### Requirements
-- iOS 15.0 or later
+- iOS 15.6 or later
+- watchOS 8.0 or later (for Apple Watch features)
 - Xcode 14.0 or later
 - Swift 5.7 or later
 
@@ -78,118 +95,137 @@ A modern iOS app designed to help eject water from electronic devices using scie
 1. Clone the repository
 2. Open `Infinitum Water Eject.xcodeproj` in Xcode
 3. Select your development team in project settings
-4. Build and run on device or simulator
+4. Configure App Groups for widget data sharing
+5. Set up StoreKit configuration for testing
+6. Build and run on device or simulator
 
-### Widget Extension
-To add the widget extension:
-1. Create a new Widget Extension target in Xcode
-2. Copy the widget files from `WidgetExtension/` folder
-3. Configure the widget bundle and deployment target
-4. Build and test the widget
+### Widget Extension Setup
+1. Add Widget Extension target in Xcode
+2. Configure App Groups for data sharing
+3. Set up widget timeline provider
+4. Test on device with different widget sizes
+
+### Apple Watch App Setup
+1. Add Watch App target in Xcode
+2. Configure complications
+3. Set up data synchronization
+4. Test on Apple Watch device
 
 ## Usage
 
 ### Basic Water Ejection
-1. Open the app and select your device type
-2. Choose the appropriate intensity level
-3. Tap "Start Water Ejection"
-4. Follow the on-screen timer and safety tips
-5. Complete the session when finished
-
-### Safety Guidelines
-- Remove device cases and accessories before ejection
-- Power off devices completely when possible
-- Use gentle motion during ejection
-- Let devices dry completely before use
-- Consult professionals for severe water damage
+1. Select your device type
+2. Choose intensity level
+3. Tap "Start Ejection"
+4. Let the process complete
+5. Allow device to dry completely
 
 ### Premium Features
-- Upgrade to premium for unlimited sessions
-- Access advanced analytics and settings
-- Remove advertisements
-- Get priority customer support
+1. Upgrade to Premium in Settings
+2. Choose monthly or yearly plan
+3. Enjoy ad-free experience
+4. Access Apple Watch widgets
+5. Use advanced analytics
 
-## Development
+### Apple Watch Usage
+1. Open Water Eject app on Apple Watch
+2. Select device and intensity
+3. Start ejection directly from watch
+4. Monitor progress in real-time
+5. View session statistics
 
-### Project Structure
-```
-Infinitum Water Eject/
-├── Models/
-│   ├── UserSettings.swift
-│   └── WaterEjectionSession.swift
-├── Services/
-│   ├── CoreDataService.swift
-│   ├── NotificationService.swift
-│   ├── SubscriptionService.swift
-│   └── WaterEjectionService.swift
-├── Views/
-│   ├── DevicePickerView.swift
-│   ├── HistoryView.swift
-│   ├── IntensityPickerView.swift
-│   ├── MainEjectionView.swift
-│   ├── MainTabView.swift
-│   ├── PremiumOfferView.swift
-│   ├── SettingsView.swift
-│   ├── SupportView.swift
-│   └── TipsView.swift
-└── WidgetExtension/
-    └── WaterEjectionWidget.swift
-```
+### Widget Usage
+1. Add Water Eject widget to home screen
+2. Choose widget size (small, medium, large)
+3. View session statistics at a glance
+4. Quick access to recent activity
 
-### Core Data Model
-- **UserSettingsEntity**: User preferences and settings
-- **WaterEjectionSessionEntity**: Session data and metadata
+## Safety Guidelines
 
-### Key Components
-- **MainTabView**: Primary navigation structure
-- **MainEjectionView**: Core ejection interface
-- **HistoryView**: Session history and analytics
-- **SettingsView**: App configuration and support
-- **TipsView**: Device-specific safety information
+### Important Notes
+- **Not a Guarantee**: This app is not a guarantee against water damage
+- **Professional Help**: Seek professional repair for severe water damage
+- **Device Limits**: Some devices may not respond to audio frequencies
+- **Volume Caution**: Keep volume at safe levels to avoid hearing damage
+- **Drying Time**: Always allow devices to dry completely before use
 
-## Privacy & Security
+### Best Practices
+- Act quickly after water exposure
+- Remove cases and accessories before ejection
+- Use silica gel packets for faster drying
+- Never use heat sources to dry electronics
+- Test device functionality after drying
+
+## Privacy & Data
 
 ### Data Collection
-- Minimal data collection for app functionality
-- All data stored locally on device
-- No personal information transmitted without consent
-- Optional analytics for app improvement
+- **Session Data**: Local storage of ejection sessions
+- **Usage Analytics**: Anonymous usage statistics
+- **No Personal Data**: No personal information collected
+- **Local Processing**: All data processed locally
 
-### Data Storage
-- Core Data with local persistence
-- Optional iCloud sync for premium users
-- Secure data handling and encryption
-- User control over data retention
+### Data Sharing
+- **iCloud Sync**: Optional cloud backup (premium feature)
+- **No Third Parties**: Data never shared with third parties
+- **User Control**: Complete control over data export and deletion
 
 ## Support
 
 ### Contact Information
-- **Email**: support@infinitumlive.com
-- **Website**: infinitumwatereject.com
-- **Location**: Pittsburgh, PA, USA
+- **Email**: support@infinitumimagery.com
+- **Website**: https://infinitumimagery.com
+- **Premium Support**: Priority support for premium users
 
-### Documentation
-- In-app help and FAQ section
-- Comprehensive privacy policy
-- Detailed terms of service
-- Safety guidelines and best practices
+### Troubleshooting
+- **Audio Issues**: Check device volume and audio settings
+- **Widget Problems**: Restart device and re-add widgets
+- **Watch Sync**: Ensure both devices are connected
+- **Subscription**: Contact App Store support for billing issues
 
-## License
+## Legal
 
-Copyright 2025 Infinitum Imagery LLC
+### Terms of Service
+- **Usage Agreement**: By using the app, you agree to our terms
+- **Liability**: App is provided "as is" without warranties
+- **Updates**: Terms may be updated with notice
+- **Jurisdiction**: Governed by laws of Pennsylvania, USA
 
-Made by JrFTW in Pittsburgh, PA, USA
+### Privacy Policy
+- **Data Protection**: Your privacy is our priority
+- **Transparency**: Clear information about data usage
+- **User Rights**: Control over your personal data
+- **Compliance**: Follows applicable privacy laws
 
-All rights reserved. This app is proprietary software and may not be redistributed without permission.
+## Development
 
-## Acknowledgments
+### Contributing
+- Fork the repository
+- Create feature branch
+- Submit pull request
+- Follow coding standards
+- Include tests
 
-- Built with SwiftUI and Core Data
-- Audio generation using AVFoundation
-- Subscription management with StoreKit
-- Local notifications with UserNotifications framework
-- Modern iOS design patterns and best practices
+### Testing
+- **Unit Tests**: Core functionality testing
+- **UI Tests**: User interface testing
+- **Integration Tests**: Widget and watch integration
+- **StoreKit Testing**: Subscription flow testing
 
----
+## Version History
 
-**Infinitum Water Eject** - Protecting your devices with sound science. 
+### Version 1.0.0
+- Initial release with core functionality
+- Multi-device support
+- Session tracking
+- Basic analytics
+
+### Version 1.1.0
+- Premium subscription features
+- Apple Watch app and complications
+- iOS widgets
+- Advanced analytics
+- Ad-free experience for premium users
+
+## Made by JrFTW in Pittsburgh, PA, USA
+
+Infinitum Imagery LLC - Protecting your devices, one frequency at a time. 
