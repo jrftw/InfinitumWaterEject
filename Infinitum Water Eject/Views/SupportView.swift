@@ -1,5 +1,6 @@
 import SwiftUI
 
+@available(iOS 16.0, *)
 struct SupportView: View {
     let title: String
     let content: String
@@ -28,6 +29,7 @@ struct SupportView: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct HelpFAQView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -83,6 +85,7 @@ struct HelpFAQView: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct ContactSupportView: View {
     @State private var email = ""
     @State private var subject = ""
@@ -134,8 +137,8 @@ struct ContactSupportView: View {
                 Text("Other Ways to Reach Us")
                     .font(.headline)
                 
-                ContactMethod(icon: "envelope.fill", title: "Email", detail: "support@infinitumimagery.com")
-                ContactMethod(icon: "globe", title: "Website", detail: "infinitumimagery.com")
+                ContactMethod(icon: "envelope.fill", title: "Email", detail: "support@infinitumlive.com")
+                ContactMethod(icon: "globe", title: "Website", detail: "infinitumlive.com")
                 ContactMethod(icon: "location.fill", title: "Location", detail: "Pittsburgh, PA, USA")
             }
             .padding(.top)
@@ -156,6 +159,7 @@ struct ContactSupportView: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct ContactMethod: View {
     let icon: String
     let title: String
@@ -181,6 +185,7 @@ struct ContactMethod: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct PrivacyPolicyView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -219,7 +224,7 @@ struct PrivacyPolicyView: View {
             
             PolicySection(
                 title: "Contact Us",
-                content: "If you have questions about this privacy policy, please contact us at privacy@infinitumimagery.com or through the app's support section."
+                content: "If you have questions about this privacy policy, please contact us at privacy@infinitumlive.com or through the app's support section."
             )
             
             Text("Copyright 2025 Infinitum Imagery LLC")
@@ -230,6 +235,7 @@ struct PrivacyPolicyView: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct TermsOfServiceView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -284,6 +290,7 @@ struct TermsOfServiceView: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct PolicySection: View {
     let title: String
     let content: String
@@ -301,6 +308,7 @@ struct PolicySection: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct FAQItem: View {
     let question: String
     let answer: String

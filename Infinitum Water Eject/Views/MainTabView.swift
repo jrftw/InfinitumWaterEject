@@ -1,5 +1,6 @@
 import SwiftUI
 
+@available(iOS 16.0, *)
 struct MainTabView: View {
     // @StateObject private var subscriptionService = SubscriptionService.shared
     @State private var selectedTab = 0
@@ -20,6 +21,8 @@ struct MainTabView: View {
                 }
                 .tag(1)
             
+
+            
             SettingsView()
                 .tabItem {
                     Image(systemName: "gear")
@@ -36,5 +39,9 @@ struct MainTabView: View {
 }
 
 #Preview {
-    MainTabView()
+    if #available(iOS 16.0, *) {
+        MainTabView()
+    } else {
+        Text("Requires iOS 16.0 or newer")
+    }
 } 

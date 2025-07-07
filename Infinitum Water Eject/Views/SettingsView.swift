@@ -1,5 +1,6 @@
 import SwiftUI
 
+@available(iOS 16.0, *)
 struct SettingsView: View {
     @StateObject private var coreDataService = CoreDataService.shared
     @StateObject private var notificationService = NotificationService.shared
@@ -20,7 +21,7 @@ struct SettingsView: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 // Disclaimer Section
                 Section {
@@ -284,7 +285,7 @@ struct SettingsView: View {
                         
                         Spacer()
                         
-                        Button("1.0.0") {
+                        Button(getAppVersion()) {
                             showingChangeLog = true
                         }
                         .foregroundColor(.blue)
@@ -316,6 +317,7 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle(NSLocalizedString("Settings", comment: "Settings navigation title"))
+            .navigationViewStyle(StackNavigationViewStyle())
             .sheet(isPresented: $showingDisclaimer) {
                 VStack(spacing: 24) {
                     Image(systemName: "exclamationmark.triangle.fill")
@@ -344,7 +346,23 @@ struct SettingsView: View {
                 TipsView()
             }
             .sheet(isPresented: $showingSupport) {
-                SupportView(title: "Support & Help", content: "Get help and support for Infinitum Water Eject")
+                if #available(iOS 16.0, *) {
+                    SupportHelpView()
+                } else {
+                    VStack(spacing: 16) {
+                        Text("Support & Help")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                        Text("This feature requires iOS 16.0 or newer.")
+                            .font(.body)
+                            .multilineTextAlignment(.center)
+                        Button("Close") {
+                            showingSupport = false
+                        }
+                        .padding()
+                    }
+                    .padding()
+                }
             }
             .sheet(isPresented: $showingChangeLog) {
                 ChangeLogView()
@@ -382,8 +400,18 @@ struct SettingsView: View {
         // Implementation for opening terms of service
         print("Open terms of service")
     }
+    
+    private func getAppVersion() -> String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+        return "\(version) Build \(build)"
+    }
 }
 
 #Preview {
-    SettingsView()
+    if #available(iOS 16.0, *) {
+        SettingsView()
+    } else {
+        Text("Requires iOS 16.0 or newer")
+    }
 } 

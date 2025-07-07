@@ -1,11 +1,12 @@
 import SwiftUI
 
+@available(iOS 16.0, *)
 struct DevicePickerView: View {
     @Binding var selectedDevice: DeviceType
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 ForEach(DeviceType.allCases, id: \.self) { device in
                     Button(action: {
@@ -43,6 +44,7 @@ struct DevicePickerView: View {
             }
             .navigationTitle("Select Device")
             .navigationBarTitleDisplayMode(.inline)
+            .navigationViewStyle(StackNavigationViewStyle())
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
@@ -72,5 +74,9 @@ struct DevicePickerView: View {
 }
 
 #Preview {
-    DevicePickerView(selectedDevice: .constant(.iphone))
+    if #available(iOS 16.0, *) {
+        DevicePickerView(selectedDevice: .constant(.iphone))
+    } else {
+        Text("Requires iOS 16.0 or newer")
+    }
 } 

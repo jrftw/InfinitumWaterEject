@@ -2,6 +2,7 @@
 import SwiftUI
 import StoreKit
 
+@available(iOS 16.0, *)
 struct PremiumOfferView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var subscriptionService = SubscriptionService.shared
@@ -9,7 +10,7 @@ struct PremiumOfferView: View {
     @State private var purchaseError: String?
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 VStack(spacing: 30) {
                     // Header
@@ -163,6 +164,7 @@ struct PremiumOfferView: View {
             }
             .navigationTitle("Premium")
             .navigationBarTitleDisplayMode(.inline)
+            .navigationViewStyle(StackNavigationViewStyle())
             .navigationBarItems(
                 leading: Button("Cancel") {
                     dismiss()
@@ -198,6 +200,7 @@ struct PremiumOfferView: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct BenefitRow: View {
     let icon: String
     let title: String

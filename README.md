@@ -164,7 +164,7 @@ Infinitum Water Eject/
 ## Support
 
 ### Contact Information
-- **Email**: support@infinitumwatereject.com
+- **Email**: support@infinitumlive.com
 - **Website**: infinitumwatereject.com
 - **Location**: Pittsburgh, PA, USA
 

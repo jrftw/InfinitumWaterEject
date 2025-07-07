@@ -1,10 +1,11 @@
 import SwiftUI
 
+@available(iOS 16.0, *)
 struct TipsView: View {
     @State private var selectedDevice: DeviceType = .iphone
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 0) {
                 // Device Picker - Horizontal Scrollable
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -45,10 +46,12 @@ struct TipsView: View {
             }
             .navigationTitle("Safety Tips")
             .navigationBarTitleDisplayMode(.inline)
+            .navigationViewStyle(StackNavigationViewStyle())
         }
     }
 }
 
+@available(iOS 16.0, *)
 struct DevicePickerButton: View {
     let device: DeviceType
     let isSelected: Bool
@@ -78,6 +81,7 @@ struct DevicePickerButton: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct iPhoneTipsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -138,6 +142,7 @@ struct iPhoneTipsView: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct iPadTipsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -198,6 +203,7 @@ struct iPadTipsView: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct MacBookTipsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -258,6 +264,7 @@ struct MacBookTipsView: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct AppleWatchTipsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -318,6 +325,7 @@ struct AppleWatchTipsView: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct AirPodsTipsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -378,6 +386,7 @@ struct AirPodsTipsView: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct OtherDeviceTipsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -438,6 +447,7 @@ struct OtherDeviceTipsView: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct TipSection: View {
     let title: String
     let tips: [String]
@@ -470,6 +480,7 @@ struct TipSection: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct WarningSection: View {
     let warnings: [String]
     
@@ -502,5 +513,9 @@ struct WarningSection: View {
 }
 
 #Preview {
-    TipsView()
+    if #available(iOS 16.0, *) {
+        TipsView()
+    } else {
+        Text("Requires iOS 16.0 or newer")
+    }
 } 

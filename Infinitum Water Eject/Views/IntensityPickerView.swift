@@ -1,5 +1,6 @@
 import SwiftUI
 
+@available(iOS 16.0, *)
 struct IntensityPickerView: View {
     @Binding var selectedIntensity: IntensityLevel
     @Environment(\.dismiss) private var dismiss
@@ -14,7 +15,7 @@ struct IntensityPickerView: View {
     private let maxDuration: Double = 300.0
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 24) {
                 // Header
                 VStack(spacing: 8) {
@@ -190,11 +191,36 @@ struct IntensityPickerView: View {
                 .background(Color.orange.opacity(0.1))
                 .cornerRadius(12)
                 
+                // Realtime Mode Info
+                if selectedIntensity == .realtime {
+                    VStack(spacing: 8) {
+                        HStack {
+                            Image(systemName: "waveform.path.ecg")
+                                .foregroundColor(.purple)
+                            
+                            Text("Realtime Mode")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                            
+                            Spacer()
+                        }
+                        
+                        Text("Adjust frequency in real-time while the session is running. Perfect for finding the optimal frequency for your specific situation.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.leading)
+                    }
+                    .padding()
+                    .background(Color.purple.opacity(0.1))
+                    .cornerRadius(12)
+                }
+                
                 Spacer()
             }
             .padding()
             .navigationTitle("Intensity")
             .navigationBarTitleDisplayMode(.inline)
+            .navigationViewStyle(StackNavigationViewStyle())
             .onAppear {
                 // Load existing custom values if they exist
                 let existingUseCustom = UserDefaults.standard.bool(forKey: "useCustomIntensity")
@@ -238,6 +264,7 @@ struct IntensityPickerView: View {
         case .medium: return 50.0
         case .high: return 75.0
         case .emergency: return 100.0
+        case .realtime: return 50.0
         }
     }
     
@@ -248,6 +275,7 @@ struct IntensityPickerView: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct IntensityLevelRow: View {
     let intensity: IntensityLevel
     let isSelected: Bool
@@ -289,5 +317,9 @@ struct IntensityLevelRow: View {
 }
 
 #Preview {
-    IntensityPickerView(selectedIntensity: .constant(.medium))
+    if #available(iOS 16.0, *) {
+        IntensityPickerView(selectedIntensity: .constant(.medium))
+    } else {
+        Text("Requires iOS 16.0 or newer")
+    }
 } 

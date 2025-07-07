@@ -30,6 +30,7 @@ enum IntensityLevel: String, CaseIterable, Codable {
     case medium = "Medium"
     case high = "High"
     case emergency = "Emergency"
+    case realtime = "Realtime"
     
     var displayName: String {
         return rawValue
@@ -41,6 +42,7 @@ enum IntensityLevel: String, CaseIterable, Codable {
         case .medium: return "drop.fill"
         case .high: return "drop.fill"
         case .emergency: return "exclamationmark.triangle.fill"
+        case .realtime: return "waveform.path.ecg"
         }
     }
     
@@ -50,6 +52,7 @@ enum IntensityLevel: String, CaseIterable, Codable {
         case .medium: return .cyan
         case .high: return .orange
         case .emergency: return .red
+        case .realtime: return .purple
         }
     }
     
@@ -59,6 +62,7 @@ enum IntensityLevel: String, CaseIterable, Codable {
         case .medium: return 60
         case .high: return 120
         case .emergency: return 180
+        case .realtime: return 300 // 5 minutes for realtime mode
         }
     }
 }

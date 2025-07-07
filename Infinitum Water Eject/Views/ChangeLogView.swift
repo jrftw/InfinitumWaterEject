@@ -1,5 +1,6 @@
 import SwiftUI
 
+@available(iOS 16.0, *)
 struct ChangeLogView: View {
     var body: some View {
         ScrollView {
@@ -8,6 +9,19 @@ struct ChangeLogView: View {
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .padding(.top)
+                
+                ChangeLogSection(version: getAppVersion(), date: "2025-07-07", changes: [
+                    "Fixed iOS version compatibility issues",
+                    "Added iOS 16.0+ availability checks for all views",
+                    "Resolved app crashes on older iOS versions",
+                    "Fixed SceneDelegate configuration issues",
+                    "Improved mail composition handling for simulator",
+                    "Enhanced backward compatibility support",
+                    "Updated tab structure for better UX",
+                    "Moved Support & Help to Settings menu",
+                    "Fixed optional chaining and nil coalescing issues",
+                    "Improved error handling and user feedback"
+                ])
                 
                 ChangeLogSection(version: "1.0.0", date: "2025-07-05", changes: [
                     "Initial release of Infinitum Water Eject",
@@ -21,16 +35,21 @@ struct ChangeLogView: View {
                     "Notifications and reminders",
                     "Settings, privacy policy, and terms of service"
                 ])
-                
-                // Add more ChangeLogSection for future versions
             }
             .padding()
         }
         .navigationTitle("Change Log")
         .navigationBarTitleDisplayMode(.inline)
     }
+    
+    private func getAppVersion() -> String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+        return "\(version) Build \(build)"
+    }
 }
 
+@available(iOS 16.0, *)
 struct ChangeLogSection: View {
     let version: String
     let date: String
@@ -64,7 +83,3 @@ struct ChangeLogSection: View {
         .cornerRadius(12)
     }
 }
-
-#Preview {
-    ChangeLogView()
-} 

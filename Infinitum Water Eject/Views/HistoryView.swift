@@ -1,5 +1,6 @@
 import SwiftUI
 
+@available(iOS 16.0, *)
 struct HistoryView: View {
     @StateObject private var waterEjectionService = WaterEjectionService.shared
     @State private var selectedFilter: HistoryFilter = .all
@@ -28,7 +29,7 @@ struct HistoryView: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 0) {
                 // Filter Picker
                 Picker("Filter", selection: $selectedFilter) {
@@ -37,27 +38,33 @@ struct HistoryView: View {
                     }
                 }
                 .pickerStyle(SegmentedPickerStyle())
-                .padding()
+                .padding(.horizontal)
+                .padding(.vertical, 8)
                 
                 if filteredSessions.isEmpty {
                     EmptyHistoryView(filter: selectedFilter)
                 } else {
-                    // Statistics Card
-                    StatsCard(stats: waterEjectionService.getSessionStats(), filter: selectedFilter)
-                        .padding(.horizontal)
-                    
-                    // Sessions List
-                    List {
-                        ForEach(filteredSessions.sorted(by: { $0.startTime > $1.startTime }), id: \.id) { session in
-                            SessionRowView(session: session)
+                    ScrollView {
+                        VStack(spacing: 16) {
+                            // Statistics Card
+                            StatsCard(stats: waterEjectionService.getSessionStats(), filter: selectedFilter)
+                                .padding(.horizontal)
+                            
+                            // Sessions List
+                            LazyVStack(spacing: 8) {
+                                ForEach(filteredSessions.sorted(by: { $0.startTime > $1.startTime }), id: \.id) { session in
+                                    SessionRowView(session: session)
+                                        .padding(.horizontal)
+                                }
+                            }
                         }
-                        .onDelete(perform: deleteSessions)
+                        .padding(.vertical)
                     }
-                    .listStyle(PlainListStyle())
                 }
             }
             .navigationTitle("History")
             .navigationBarTitleDisplayMode(.inline)
+            .navigationViewStyle(StackNavigationViewStyle())
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingStats = true }) {
@@ -80,6 +87,7 @@ struct HistoryView: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct EmptyHistoryView: View {
     let filter: HistoryFilter
     
@@ -120,6 +128,7 @@ struct EmptyHistoryView: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct StatsCard: View {
     let stats: SessionStats
     let filter: HistoryFilter
@@ -187,6 +196,7 @@ struct StatsCard: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct StatItem: View {
     let title: String
     let value: String
@@ -211,19 +221,24 @@ struct StatItem: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct SessionRowView: View {
     let session: WaterEjectionSession
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 12) {
                 Image(systemName: session.deviceType.icon)
                     .foregroundColor(.blue)
-                    .frame(width: 20)
+                    .frame(width: 24, height: 24)
                 
-                Text(session.deviceType.displayName)
-                    .font(.headline)
-                    .fontWeight(.medium)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(session.deviceType.displayName)
+                        .font(.headline)
+                        .fontWeight(.medium)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.9)
+                }
                 
                 Spacer()
                 
@@ -231,32 +246,43 @@ struct SessionRowView: View {
             }
             
             HStack {
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text("Intensity: \(session.intensityLevel.displayName)")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.9)
                     
                     Text("Duration: \(formatDuration(session.duration))")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.9)
                 }
                 
                 Spacer()
                 
-                VStack(alignment: .trailing, spacing: 2) {
+                VStack(alignment: .trailing, spacing: 4) {
                     Text(formatDate(session.startTime))
                         .font(.caption)
                         .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.9)
                     
                     if let endTime = session.endTime {
                         Text(formatTime(session.startTime, endTime))
                             .font(.caption)
                             .foregroundColor(.secondary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.9)
                     }
                 }
             }
         }
-        .padding(.vertical, 4)
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
+        .frame(maxWidth: .infinity)
     }
     
     private func formatDuration(_ duration: TimeInterval) -> String {
@@ -278,6 +304,7 @@ struct SessionRowView: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct StatusBadge: View {
     let isCompleted: Bool
     
@@ -293,12 +320,13 @@ struct StatusBadge: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct StatisticsView: View {
     let stats: SessionStats
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
                     // Overview Stats
@@ -392,6 +420,7 @@ struct StatisticsView: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct StatCard: View {
     let title: String
     let value: String
@@ -419,6 +448,7 @@ struct StatCard: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct DeviceStatRow: View {
     let device: DeviceType
     let count: Int
@@ -447,6 +477,7 @@ struct DeviceStatRow: View {
     }
 }
 
+@available(iOS 16.0, *)
 struct IntensityStatRow: View {
     let intensity: IntensityLevel
     let count: Int
@@ -491,5 +522,9 @@ enum HistoryFilter: CaseIterable {
 }
 
 #Preview {
-    HistoryView()
+    if #available(iOS 16.0, *) {
+        HistoryView()
+    } else {
+        Text("Requires iOS 16.0 or newer")
+    }
 } 
