@@ -1,3 +1,8 @@
+//* AUTHOR: Kevin Doyle Jr.
+//* CREATED: [7/5/2025]
+//* LAST MODIFIED: [7/9/2025]
+
+
 import SwiftUI
 
 @available(iOS 16.0, *)
@@ -9,6 +14,11 @@ struct ChangeLogView: View {
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .padding(.top)
+                
+               // ChangeLogSection(version: "1.0.2 Build 1", date: "2025-07-09", changes: [
+                //     "Introduced Ads",
+                //     "Introduced Subscriptions & Premium Features"
+                //    ])
                 
                 ChangeLogSection(version: "1.0.1 Build 1", date: "2025-07-08", changes: [
                     "Updated app version to 1.0.1 Build 1",
@@ -30,7 +40,7 @@ struct ChangeLogView: View {
                     "Improved error handling and user feedback"
                 ])
                 
-                ChangeLogSection(version: "1.0.0", date: "2025-07-05", changes: [
+                ChangeLogSection(version: "1.0.0 Build 1", date: "2025-07-05", changes: [
                     "Initial release of Infinitum Water Eject",
                     "Water ejection for iPhone, iPad, MacBook, Apple Watch, AirPods, and more",
                     "Device and intensity picker with custom slider",

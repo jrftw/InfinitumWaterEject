@@ -14,8 +14,8 @@ struct WaterEjectWatchApp: App {
 #if os(watchOS)
 struct WatchMainView: View {
     @StateObject private var waterEjectionService = WaterEjectionService.shared
-    @State private var selectedDevice: DeviceType = .applewatch
-    @State private var selectedIntensity: IntensityLevel = .medium
+                @State private var selectedDevice: WatchDeviceType = .applewatch
+            @State private var selectedIntensity: WatchIntensityLevel = .medium
     @State private var isPremium = false
     
     var body: some View {
@@ -58,7 +58,7 @@ struct WatchMainView: View {
                                 .foregroundColor(.secondary)
                             
                             Picker("Device", selection: $selectedDevice) {
-                                ForEach(DeviceType.allCases, id: \.self) { device in
+                                ForEach(WatchDeviceType.allCases, id: \.self) { device in
                                     Text(device.displayName).tag(device)
                                 }
                             }
@@ -72,7 +72,7 @@ struct WatchMainView: View {
                                 .foregroundColor(.secondary)
                             
                             Picker("Intensity", selection: $selectedIntensity) {
-                                ForEach(IntensityLevel.allCases, id: \.self) { intensity in
+                                ForEach(WatchIntensityLevel.allCases, id: \.self) { intensity in
                                     Text(intensity.displayName).tag(intensity)
                                 }
                             }
