@@ -1,19 +1,19 @@
 /*
  * ============================================================================
- * INFINITUM WATER EJECT - WATER EJECTION SESSION MODEL
+ * INFINITUM WATER EJECT - WATER & DUST EJECTION SESSION MODEL
  * ============================================================================
  * 
  * FILE: WaterEjectionSession.swift
- * PURPOSE: Defines data models for water ejection sessions and related enums
+ * PURPOSE: Defines data models for water and dust ejection sessions and related enums
  * AUTHOR: Kevin Doyle Jr.
  * CREATED: [7/5/2025]
  * LAST MODIFIED: [7/9/2025]
  *
  * DESCRIPTION:
- * This file contains the core data models for tracking water ejection sessions
+ * This file contains the core data models for tracking water and dust ejection sessions
  * in the Infinitum Water Eject application. It defines the WaterEjectionSession
- * struct and supporting enums (IntensityLevel, DeviceType) that manage session
- * data, device compatibility, and intensity settings for water removal operations.
+ * struct, DeviceType enum, and IntensityLevel enum for managing session
+ * data, device compatibility, and intensity settings for water and dust removal operations.
  * 
  * ARCHITECTURE OVERVIEW:
  * - WaterEjectionSession: Main data structure for session tracking
@@ -198,17 +198,17 @@ enum IntensityLevel: String, CaseIterable, Codable {
     // MARK: - Intensity Cases
     // Five intensity levels with string raw values for persistence
     
-    /// Low intensity - gentle water removal (30 seconds)
-    case low = "Low"
+    /// Low intensity - gentle water and dust removal (30 seconds)
+    case low
     
-    /// Medium intensity - standard water removal (60 seconds)
-    case medium = "Medium"
+    /// Medium intensity - standard water and dust removal (60 seconds)
+    case medium
     
-    /// High intensity - aggressive water removal (120 seconds)
-    case high = "High"
+    /// High intensity - aggressive water and dust removal (120 seconds)
+    case high
     
-    /// Emergency intensity - maximum water removal (180 seconds)
-    case emergency = "Emergency"
+    /// Emergency intensity - maximum water and dust removal (180 seconds)
+    case emergency
     
     /// Realtime intensity - continuous adjustment mode (300 seconds)
     case realtime = "Realtime"
@@ -250,10 +250,10 @@ enum IntensityLevel: String, CaseIterable, Codable {
     /// Used for session planning and progress tracking
     var duration: TimeInterval {
         switch self {
-        case .low: return 30         // 30 seconds for gentle water removal
-        case .medium: return 60      // 1 minute for standard water removal
-        case .high: return 120       // 2 minutes for aggressive water removal
-        case .emergency: return 180  // 3 minutes for maximum water removal
+        case .low: return 30         // 30 seconds for gentle water and dust removal
+        case .medium: return 60      // 1 minute for standard water and dust removal
+        case .high: return 120       // 2 minutes for aggressive water and dust removal
+        case .emergency: return 180  // 3 minutes for maximum water and dust removal
         case .realtime: return 300   // 5 minutes for continuous adjustment mode
         }
     }

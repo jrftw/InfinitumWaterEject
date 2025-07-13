@@ -23,10 +23,11 @@ struct IntensityPickerView: View {
                         .font(.title2)
                         .fontWeight(.bold)
                     
-                    Text("Choose the intensity level for water ejection")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                    Text("Choose the intensity level for water and dust ejection")
+                        .font(.headline)
+                        .fontWeight(.semibold)
                         .multilineTextAlignment(.center)
+                        .padding(.horizontal)
                 }
                 
                 // Preset Intensity Levels

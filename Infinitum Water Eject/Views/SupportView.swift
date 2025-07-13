@@ -38,8 +38,8 @@ struct HelpFAQView: View {
                 .fontWeight(.bold)
             
             FAQItem(
-                question: "How does water ejection work?",
-                answer: "Infinitum Water Eject generates specific sound frequencies that help dislodge water droplets from your device's speakers and internal components. The app uses scientifically-tuned frequencies optimized for different water exposure levels."
+                question: "How does water and dust ejection work?",
+                answer: "Infinitum Water Eject generates specific sound frequencies that help dislodge water droplets and dust particles from your device's speakers and internal components. The app uses scientifically-tuned frequencies optimized for different water and dust exposure levels."
             )
             
             FAQItem(
@@ -75,7 +75,7 @@ struct HelpFAQView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("• Never use heat sources (hair dryers, ovens) to dry electronics")
                 Text("• Avoid extreme shaking that could damage internal components")
-                Text("• If water damage is severe, consult a professional")
+                Text("• If water or dust damage is severe, consult a professional")
                 Text("• This app is for preventive measures only")
                 Text("• Always remove cases and accessories before ejection")
             }
@@ -204,7 +204,7 @@ struct PrivacyPolicyView: View {
             
             PolicySection(
                 title: "How We Use Information",
-                content: "We use collected information to improve our water ejection algorithms, provide personalized recommendations, and enhance app functionality. Session data helps us optimize frequencies for different devices and water exposure levels."
+                content: "We use collected information to improve our water and dust ejection algorithms, provide personalized recommendations, and enhance app functionality. Session data helps us optimize frequencies for different devices and water/dust exposure levels."
             )
             
             PolicySection(
@@ -254,12 +254,12 @@ struct TermsOfServiceView: View {
             
             PolicySection(
                 title: "App Purpose",
-                content: "Infinitum Water Eject is designed to help prevent water damage to electronic devices through sound frequency generation. The app is for preventive measures only and should not replace professional repair services."
+                content: "Infinitum Water Eject is designed to help prevent water and dust damage to electronic devices through sound frequency generation. The app is for preventive measures only and should not replace professional repair services."
             )
             
             PolicySection(
                 title: "User Responsibilities",
-                content: "Users are responsible for following safety guidelines, using the app as intended, and seeking professional help for severe water damage. The app is not liable for any damage caused by improper use."
+                content: "Users are responsible for following safety guidelines, using the app as intended, and seeking professional help for severe water or dust damage. The app is not liable for any damage caused by improper use."
             )
             
             // PolicySection(

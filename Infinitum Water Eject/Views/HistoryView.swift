@@ -120,7 +120,7 @@ struct EmptyHistoryView: View {
     private func getEmptyMessage() -> String {
         switch filter {
         case .all:
-            return "Start your first water ejection session to see it here"
+            return "Start your first water and dust ejection session to see it here"
         case .completed:
             return "No completed sessions found. Complete a session to see it here"
         case .incomplete:

@@ -118,7 +118,7 @@ struct iPhoneTipsView: View {
                 tips: [
                     "Let device dry for at least 2 hours",
                     "Don't charge for at least 4 hours",
-                    "Check for water damage indicators",
+                    "Check for water and dust damage indicators",
                     "Test all functions before use",
                     "If issues persist, consult Apple Support"
                 ]
@@ -130,7 +130,7 @@ struct iPhoneTipsView: View {
                     "Focus on speaker grilles and charging port",
                     "iPhone 7+ models are water-resistant but not waterproof",
                     "Avoid using in saltwater or chlorinated water",
-                    "Check water damage indicator in SIM tray",
+                    "Check for water and dust damage in ports",
                     "Use rice or silica gel for additional drying"
                 ]
             )
@@ -140,7 +140,7 @@ struct iPhoneTipsView: View {
                     "Never use heat sources (hair dryers, ovens)",
                     "Don't insert objects into ports",
                     "Avoid extreme shaking",
-                    "Don't use if water damage is severe",
+                    "Don't use if water or dust damage is severe",
                     "This app is for preventive measures only"
                 ]
             )
@@ -201,7 +201,7 @@ struct iPadTipsView: View {
                     "Never use heat sources",
                     "Don't insert objects into ports",
                     "Avoid extreme shaking",
-                    "Don't use if water damage is severe",
+                    "Don't use if water or dust damage is severe",
                     "This app is for preventive measures only"
                 ]
             )
@@ -262,7 +262,7 @@ struct MacBookTipsView: View {
                     "Never use heat sources",
                     "Don't insert objects into ports",
                     "Avoid extreme shaking",
-                    "Don't use if water damage is severe",
+                    "Don't use if water or dust damage is severe",
                     "This app is for preventive measures only"
                 ]
             )
@@ -313,7 +313,7 @@ struct AppleWatchTipsView: View {
                     "Focus on speaker and microphone areas",
                     "Apple Watch Series 2+ are water-resistant",
                     "Avoid using in saltwater",
-                    "Check for water damage in ports",
+                    "Check for water and dust damage in ports",
                     "Use silica gel packets for drying"
                 ]
             )
@@ -323,7 +323,7 @@ struct AppleWatchTipsView: View {
                     "Never use heat sources",
                     "Don't insert objects into ports",
                     "Avoid extreme shaking",
-                    "Don't use if water damage is severe",
+                    "Don't use if water or dust damage is severe",
                     "This app is for preventive measures only"
                 ]
             )
@@ -374,7 +374,7 @@ struct AirPodsTipsView: View {
                     "Focus on speaker grilles",
                     "AirPods Pro have better water resistance",
                     "Avoid using in humid environments",
-                    "Check for water damage in ports",
+                    "Check for water and dust damage in ports",
                     "Use silica gel packets for drying"
                 ]
             )
@@ -384,7 +384,7 @@ struct AirPodsTipsView: View {
                     "Never use heat sources",
                     "Don't insert objects into ports",
                     "Avoid extreme shaking",
-                    "Don't use if water damage is severe",
+                    "Don't use if water or dust damage is severe",
                     "This app is for preventive measures only"
                 ]
             )
@@ -435,7 +435,7 @@ struct OtherDeviceTipsView: View {
                     "Focus on speaker grilles and ports",
                     "Check device water resistance rating",
                     "Avoid using in humid environments",
-                    "Check for water damage indicators",
+                    "Check for water and dust damage indicators",
                     "Use silica gel packets for drying"
                 ]
             )
@@ -445,7 +445,7 @@ struct OtherDeviceTipsView: View {
                     "Never use heat sources",
                     "Don't insert objects into ports",
                     "Avoid extreme shaking",
-                    "Don't use if water damage is severe",
+                    "Don't use if water or dust damage is severe",
                     "This app is for preventive measures only"
                 ]
             )

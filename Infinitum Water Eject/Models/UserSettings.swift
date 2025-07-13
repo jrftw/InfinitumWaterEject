@@ -97,7 +97,7 @@ struct UserSettings: Codable {
     /// Stored as a Date object but only time components are used
     var dailyReminderTime: Date
     
-    /// Target number of water ejection sessions the user aims to complete per week
+    /// Target number of water and dust ejection sessions the user aims to complete per week
     /// Used for goal tracking and progress visualization
     var weeklyGoal: Int
     

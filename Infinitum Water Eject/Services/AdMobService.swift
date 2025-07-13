@@ -152,10 +152,16 @@ class AdMobService: NSObject, ObservableObject {
         // MARK: - Premium User Check
         // Check if user has premium subscription - premium users see no ads
         let isPremium = UserDefaults.standard.bool(forKey: "isPremium")
+        
+        #if DEBUG
+        // Disable ads for debug builds and simulator
+        return ""
+        #else
         if isPremium {
             return "" // Return empty string to indicate no ads should be shown
         }
         return bannerAdUnitId  // Return production ad unit ID for non-premium users
+        #endif
     }
     
     // MARK: - Banner Ad Preloading

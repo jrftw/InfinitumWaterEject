@@ -42,7 +42,7 @@ struct ChangeLogView: View {
                 
                 ChangeLogSection(version: "1.0.0 Build 1", date: "2025-07-05", changes: [
                     "Initial release of Infinitum Water Eject",
-                    "Water ejection for iPhone, iPad, MacBook, Apple Watch, AirPods, and more",
+                    "Water and dust ejection for iPhone, iPad, MacBook, Apple Watch, AirPods, and more",
                     "Device and intensity picker with custom slider",
                     "Session history and analytics dashboard",
                     // "Premium subscription: unlimited sessions, advanced analytics, ad-free, priority support",

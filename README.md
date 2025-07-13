@@ -1,6 +1,6 @@
 # Infinitum Water Eject
 
-A comprehensive iOS app designed to protect your devices from water damage using optimized sound frequencies. The app generates specific audio frequencies that help dislodge water from device speakers and other components.
+A comprehensive iOS app designed to protect your devices from water and dust damage using optimized sound frequencies. The app generates specific audio frequencies that help dislodge water and dust from device speakers and other components.
 
 ## Features
 
@@ -8,15 +8,15 @@ A comprehensive iOS app designed to protect your devices from water damage using
 - **Multi-Device Support**: Optimized frequencies for iPhone, iPad, MacBook, Apple Watch, AirPods, and other devices
 - **Intensity Levels**: Multiple ejection intensities (Low, Medium, High, Emergency, Realtime)
 - **Real-time Control**: Dynamic frequency adjustment during active sessions
-- **Session Tracking**: Complete history and analytics of all water ejection sessions
+- **Session Tracking**: Complete history and analytics of all water and dust ejection sessions
 - **Safety Features**: Built-in safety checks and user guidance
 
 ### Premium Features (Subscription Required)
 - **Ad-Free Experience**: Remove all advertisements
-- **Unlimited Sessions**: No daily limits on water ejection sessions
+- **Unlimited Sessions**: No daily limits on water and dust ejection sessions
 - **Advanced Analytics**: Detailed insights into device protection habits
 - **Apple Watch Widgets**: Quick access to controls and statistics on your Apple Watch
-- **Apple Watch App**: Full water ejection functionality on Apple Watch
+- **Apple Watch App**: Full water and dust ejection functionality on Apple Watch
 - **Custom Frequency Presets**: Save and reuse custom frequency settings
 - **Export Session Data**: Backup and analyze your session history
 - **Cloud Backup & Sync**: Secure cloud storage for your data (uses Apple iCloud/CloudKit free tier, no ongoing cost)
@@ -24,7 +24,7 @@ A comprehensive iOS app designed to protect your devices from water damage using
 - **Custom Notification Schedules**: Personalized reminder settings
 
 ### Apple Watch Integration
-- **Watch App**: Complete water ejection functionality on Apple Watch
+- **Watch App**: Complete water and dust ejection functionality on Apple Watch
 - **Complications**: Quick access to session statistics on watch faces
 - **Widgets**: Multiple widget sizes showing session data and quick controls
 - **Real-time Sync**: Instant synchronization between iPhone and Apple Watch
@@ -88,144 +88,54 @@ A comprehensive iOS app designed to protect your devices from water damage using
 ### Requirements
 - iOS 15.6 or later
 - watchOS 8.0 or later (for Apple Watch features)
-- Xcode 14.0 or later
-- Swift 5.7 or later
+- Xcode 15.0 or later (for development)
 
 ### Setup
 1. Clone the repository
 2. Open `Infinitum Water Eject.xcodeproj` in Xcode
-3. Select your development team in project settings
-4. Configure App Groups for widget data sharing
-5. Set up StoreKit configuration for testing
-6. Build and run on device or simulator
-
-### Widget Extension Setup
-1. Add Widget Extension target in Xcode
-2. Configure App Groups for data sharing
-3. Set up widget timeline provider
-4. Test on device with different widget sizes
-
-### Apple Watch App Setup
-1. Add Watch App target in Xcode
-2. Configure complications
-3. Set up data synchronization
-4. Test on Apple Watch device
+3. Configure your development team and bundle identifier
+4. Build and run on device or simulator
 
 ## Usage
 
-### Basic Water Ejection
-1. Select your device type
-2. Choose intensity level
-3. Tap "Start Ejection"
-4. Let the process complete
-5. Allow device to dry completely
-
-### Premium Features
-1. Upgrade to Premium in Settings
-2. Choose monthly or yearly plan
-3. Enjoy ad-free experience
-4. Access Apple Watch widgets
-5. Use advanced analytics
+### Basic Water and Dust Ejection
+1. Open the app and select your device type
+2. Choose the appropriate intensity level
+3. Tap "Start Water & Dust Ejection"
+4. Follow the on-screen timer and safety tips
+5. Let your device dry completely before use
 
 ### Apple Watch Usage
 1. Open Water Eject app on Apple Watch
 2. Select device and intensity
-3. Start ejection directly from watch
-4. Monitor progress in real-time
-5. View session statistics
+3. Start ejection session
+4. Monitor progress on watch face
+5. Complete session when finished
 
 ### Widget Usage
 1. Add Water Eject widget to home screen
-2. Choose widget size (small, medium, large)
-3. View session statistics at a glance
-4. Quick access to recent activity
+2. View session statistics at a glance
+3. Quick access to start new sessions
+4. Monitor weekly progress
 
 ## Safety Guidelines
 
 ### Important Notes
-- **Not a Guarantee**: This app is not a guarantee against water damage
-- **Professional Help**: Seek professional repair for severe water damage
-- **Device Limits**: Some devices may not respond to audio frequencies
-- **Volume Caution**: Keep volume at safe levels to avoid hearing damage
-- **Drying Time**: Always allow devices to dry completely before use
+- **Not a Guarantee**: This app is not a guarantee against water or dust damage
+- **Professional Help**: Seek professional repair for severe water or dust damage
+- **Preventive Only**: Use as a preventive measure, not for severe damage
 
 ### Best Practices
-- Act quickly after water exposure
+- Act quickly after water or dust exposure
 - Remove cases and accessories before ejection
-- Use silica gel packets for faster drying
-- Never use heat sources to dry electronics
-- Test device functionality after drying
-
-## Privacy & Data
-
-### Data Collection
-- **Session Data**: Local storage of ejection sessions
-- **Usage Analytics**: Anonymous usage statistics
-- **No Personal Data**: No personal information collected
-- **Local Processing**: All data processed locally
-
-### Data Sharing
-- **iCloud Sync**: Optional cloud backup (premium feature)
-- **No Third Parties**: Data never shared with third parties
-- **User Control**: Complete control over data export and deletion
+- Use appropriate intensity levels
+- Let device dry completely before use
+- Follow device-specific safety tips
 
 ## Support
 
-### Contact Information
-- **Email**: support@infinitumimagery.com
-- **Website**: https://infinitumimagery.com
-- **Premium Support**: Priority support for premium users
+For support, questions, or feature requests, please contact us through the app's support section or email support@infinitumlive.com.
 
-### Troubleshooting
-- **Audio Issues**: Check device volume and audio settings
-- **Widget Problems**: Restart device and re-add widgets
-- **Watch Sync**: Ensure both devices are connected
-- **Subscription**: Contact App Store support for billing issues
+## License
 
-## Legal
-
-### Terms of Service
-- **Usage Agreement**: By using the app, you agree to our terms
-- **Liability**: App is provided "as is" without warranties
-- **Updates**: Terms may be updated with notice
-- **Jurisdiction**: Governed by laws of Pennsylvania, USA
-
-### Privacy Policy
-- **Data Protection**: Your privacy is our priority
-- **Transparency**: Clear information about data usage
-- **User Rights**: Control over your personal data
-- **Compliance**: Follows applicable privacy laws
-
-## Development
-
-### Contributing
-- Fork the repository
-- Create feature branch
-- Submit pull request
-- Follow coding standards
-- Include tests
-
-### Testing
-- **Unit Tests**: Core functionality testing
-- **UI Tests**: User interface testing
-- **Integration Tests**: Widget and watch integration
-- **StoreKit Testing**: Subscription flow testing
-
-## Version History
-
-### Version 1.0.0
-- Initial release with core functionality
-- Multi-device support
-- Session tracking
-- Basic analytics
-
-### Version 1.1.0
-- Premium subscription features
-- Apple Watch app and complications
-- iOS widgets
-- Advanced analytics
-- Ad-free experience for premium users
-
-## Made by JrFTW in Pittsburgh, PA, USA
-
-Infinitum Imagery LLC - Protecting your devices, one frequency at a time. 
+Copyright © 2025 Infinitum Imagery LLC. All rights reserved. 

@@ -47,7 +47,7 @@ struct SettingsView: View {
                             .foregroundColor(.blue)
                         
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(NSLocalizedString("Water Ejection User", comment: "User profile label"))
+                            Text(NSLocalizedString("Water & Dust Ejection User", comment: "User profile label"))
                                 .font(.headline)
                                 .fontWeight(.semibold)
                             
@@ -355,7 +355,7 @@ struct SettingsView: View {
                     Text(NSLocalizedString("Disclaimer", comment: "Disclaimer label"))
                         .font(.title2)
                         .fontWeight(.bold)
-                    Text(NSLocalizedString("Infinitum Water Eject is for preventive measures only. It does not guarantee device repair. Use at your own risk. Severe water damage should be handled by professionals.", comment: "Disclaimer text"))
+                    Text(NSLocalizedString("Infinitum Water Eject is for preventive measures only. It does not guarantee device repair. Use at your own risk. Severe water or dust damage should be handled by professionals.", comment: "Disclaimer text"))
                         .font(.body)
                         .multilineTextAlignment(.center)
                         .padding()

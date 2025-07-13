@@ -130,11 +130,11 @@ class NotificationService: ObservableObject {
         // Remove all existing pending notifications to prevent duplicates
         center.removeAllPendingNotificationRequests()
         
-        // MARK: - Notification Content Creation
-        // Create notification content with title, body, sound, and badge
+        // MARK: - Notification Content Configuration
+        // Configure notification content with title, body, and sound
         let content = UNMutableNotificationContent()
-        content.title = "Water Ejection Reminder"
-        content.body = "Time to check your devices for water damage prevention!"
+        content.title = "Water & Dust Ejection Reminder"
+        content.body = "Time to check your devices for water and dust damage prevention!"
         content.sound = .default
         content.badge = 1
         
@@ -166,8 +166,8 @@ class NotificationService: ObservableObject {
         // MARK: - Notification Content Setup
         // Create notification content specific to session completion
         let content = UNMutableNotificationContent()
-        content.title = "Ejection Complete"
-        content.body = "Your \(device.rawValue) water ejection session has finished. Remember to let it dry completely!"
+        content.title = "Session Complete"
+        content.body = "Your \(device.rawValue) water and dust ejection session has finished. Remember to let it dry completely!"
         content.sound = .default
         
         // MARK: - Immediate Trigger Creation
@@ -186,15 +186,17 @@ class NotificationService: ObservableObject {
     /// Schedules a weekly educational notification with rotating water safety tips
     /// Provides valuable information about water damage prevention
     func scheduleWeeklyTip() {
-        // MARK: - Tip Content Array
-        // Collection of educational tips about water damage prevention
-        // Rotates randomly to provide variety in educational content
+        // MARK: - Educational Tips Collection
+        // Collection of educational tips about water and dust damage prevention
         let tips = [
-            "Did you know? Most water damage occurs within the first 24 hours. Act quickly!",
-            "Tip: Always remove cases and accessories before water ejection",
-            "Remember: Let devices dry for at least 24 hours before charging",
-            "Pro tip: Use silica gel packets to speed up drying process",
-            "Safety first: Never use heat sources to dry electronics"
+            "Did you know? Most water and dust damage occurs within the first 24 hours. Act quickly!",
+            "Tip: Always remove cases and accessories before water and dust ejection",
+            "Remember: Let your device dry completely before using it again",
+            "Pro tip: Use silica gel packets to speed up the drying process",
+            "Safety first: Never use heat sources like hair dryers on electronics",
+            "Regular maintenance: Run water and dust ejection sessions weekly for best results",
+            "Device care: Keep your device away from dusty environments when possible",
+            "Prevention: Consider using protective cases in wet or dusty conditions"
         ]
         
         // MARK: - Random Tip Selection
@@ -204,7 +206,7 @@ class NotificationService: ObservableObject {
         // MARK: - Notification Content Creation
         // Create notification content with educational tip
         let content = UNMutableNotificationContent()
-        content.title = "Weekly Water Ejection Tip"
+        content.title = "Weekly Water & Dust Ejection Tip"
         content.body = randomTip
         content.sound = .default
         

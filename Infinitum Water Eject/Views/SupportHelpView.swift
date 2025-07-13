@@ -178,8 +178,8 @@ struct FAQSection: View {
     private let faqs: [FAQItemSupport] = [
         FAQItemSupport(
             id: "how-it-works",
-            question: "How does water ejection work?",
-            answer: "Infinitum Water Eject generates specific sound frequencies that help dislodge water droplets from your device's speakers and internal components. The app uses scientifically-tuned frequencies optimized for different water exposure levels and device types."
+            question: "How does water and dust ejection work?",
+            answer: "Infinitum Water Eject generates specific sound frequencies that help dislodge water droplets and dust particles from your device's speakers and internal components. The app uses scientifically-tuned frequencies optimized for different water and dust exposure levels. The frequencies are carefully calibrated to be effective yet safe."
         ),
         FAQItemSupport(
             id: "devices-supported",
@@ -209,7 +209,7 @@ struct FAQSection: View {
         FAQItemSupport(
             id: "realtime-mode",
             question: "What is Realtime mode?",
-            answer: "Realtime mode allows you to adjust the frequency while the water ejection is running. This is perfect for finding the optimal frequency for your specific situation. You can see the current frequency in real-time and adjust it using the slider."
+            answer: "Realtime mode allows you to adjust the frequency while the water and dust ejection is running. This is perfect for finding the optimal frequency for your specific situation. You can see the current frequency in real-time and adjust it using the slider."
         ),
         FAQItemSupport(
             id: "data-privacy",
@@ -335,7 +335,7 @@ struct AdditionalResourcesSection: View {
                 ResourceCard(
                     icon: "lightbulb.fill",
                     title: "Safety Tips",
-                    description: "Learn best practices for water ejection",
+                    description: "Learn best practices for water and dust ejection",
                     color: .yellow
                 )
                 

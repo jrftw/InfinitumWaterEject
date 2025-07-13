@@ -163,8 +163,8 @@ struct WaterEjectWidgetExtension: Widget {
         StaticConfiguration(kind: kind, provider: Provider()) { entry in
             WaterEjectWidgetExtensionEntryView(entry: entry)
         }
-        .configurationDisplayName("Water Eject")
-        .description("Quick access to water ejection statistics.")
+        .configurationDisplayName("Water & Dust Eject")
+        .description("Quick access to water and dust ejection for your devices")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }

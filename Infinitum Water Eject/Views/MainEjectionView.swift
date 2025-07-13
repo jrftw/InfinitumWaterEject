@@ -196,7 +196,7 @@ struct MainEjectionView: View {
                                 HStack(spacing: 8) {
                                     Image(systemName: "play.fill")
                                         .font(.headline)
-                                    Text("Start Water Ejection")
+                                    Text("Start Water & Dust Ejection")
                                         .font(.headline)
                                         .fontWeight(.semibold)
                                 }

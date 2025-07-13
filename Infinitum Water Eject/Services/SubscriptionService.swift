@@ -173,7 +173,7 @@ class SubscriptionService: NSObject, ObservableObject {
     /// Used for displaying premium benefits in the UI
     func getPremiumFeatures() -> [String] {
         return [
-            "Unlimited water ejection sessions",
+            "Unlimited water and dust ejection sessions",
             "Advanced analytics and insights",
             "Ad-free experience",
             "Priority customer support (Contact Us button with pre-filled email to support@infinitumlive.com)",
@@ -244,10 +244,33 @@ class SubscriptionService: NSObject, ObservableObject {
     // MARK: - Subscription Status Loading
     // Loads existing subscription status from persistent storage
     
+    /// Checks if the app is running in TestFlight environment
+    /// Returns true if running in TestFlight, false otherwise
+    private func isTestFlightBuild() -> Bool {
+        #if DEBUG
+        return false
+        #else
+        return Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
+        #endif
+    }
+    
     /// Loads the current premium subscription status from UserDefaults
     /// Updates widget data when subscription status is loaded
     private func loadSubscriptionStatus() {
-        isPremium = UserDefaults.standard.bool(forKey: "isPremium")
+        #if DEBUG
+        // Auto-unlock premium for debug builds and simulator
+        isPremium = true
+        UserDefaults.standard.set(true, forKey: "isPremium")
+        #else
+        if isTestFlightBuild() {
+            // Auto-unlock premium for TestFlight builds
+            isPremium = true
+            UserDefaults.standard.set(true, forKey: "isPremium")
+        } else {
+            isPremium = UserDefaults.standard.bool(forKey: "isPremium")
+        }
+        #endif
+        
         updateWidgetData()  // Update widget with current status
     }
     
