@@ -30,6 +30,12 @@
 	<true/>
 	<key>WKWatchKitApp</key>
 	<true/>
+	<key>CFBundleIconFiles</key>
+	<array>
+		<string>AppIcon</string>
+	</array>
+	<key>CFBundleIconName</key>
+	<string>AppIcon</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
