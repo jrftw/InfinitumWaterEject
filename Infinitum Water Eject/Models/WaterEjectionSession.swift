@@ -305,4 +305,17 @@ enum DeviceType: String, CaseIterable, Codable {
         case .other: return "device.phone.portrait"      // Generic device icon
         }
     }
+    
+    /// Color for the device type
+    /// Used in device selection UI and session displays
+    var color: Color {
+        switch self {
+        case .iphone: return .blue                       // iPhone blue
+        case .ipad: return .purple                       // iPad purple
+        case .macbook: return .gray                       // MacBook gray
+        case .applewatch: return .green                   // Apple Watch green
+        case .airpods: return .orange                     // AirPods orange
+        case .other: return .secondary                     // Other secondary
+        }
+    }
 } 

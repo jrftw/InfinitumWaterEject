@@ -10,7 +10,17 @@ import SwiftUI
 
 struct Provider: TimelineProvider {
     func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(date: Date(), sessionCount: 0, weeklySessions: 0, completionRate: 0, averageDuration: 0, lastSessionDate: Date())
+        SimpleEntry(
+            date: Date(), 
+            sessionCount: 0, 
+            weeklySessions: 0, 
+            completionRate: 0, 
+            averageDuration: 0, 
+            lastSessionDate: Date(),
+            achievementCount: 0,
+            currentStreak: 0,
+            isPremium: false
+        )
     }
 
     func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
@@ -42,6 +52,9 @@ struct Provider: TimelineProvider {
         let completionRate = userDefaults?.double(forKey: "completionRate") ?? 0
         let averageDuration = userDefaults?.double(forKey: "averageDuration") ?? 0
         let lastSessionDate = userDefaults?.object(forKey: "lastSessionDate") as? Date ?? Date()
+        let achievementCount = userDefaults?.integer(forKey: "achievementCount") ?? 0
+        let currentStreak = userDefaults?.integer(forKey: "currentStreak") ?? 0
+        let isPremium = userDefaults?.bool(forKey: "isPremium") ?? false
         
         return SimpleEntry(
             date: date,
@@ -49,7 +62,10 @@ struct Provider: TimelineProvider {
             weeklySessions: weeklySessions,
             completionRate: completionRate,
             averageDuration: averageDuration,
-            lastSessionDate: lastSessionDate
+            lastSessionDate: lastSessionDate,
+            achievementCount: achievementCount,
+            currentStreak: currentStreak,
+            isPremium: isPremium
         )
     }
 }
@@ -61,6 +77,9 @@ struct SimpleEntry: TimelineEntry {
     let completionRate: Double
     let averageDuration: Double
     let lastSessionDate: Date
+    let achievementCount: Int
+    let currentStreak: Int
+    let isPremium: Bool
 }
 
 struct WaterEjectWidgetExtensionEntryView : View {
@@ -91,10 +110,21 @@ struct SmallWidgetView: View {
                 
                 Spacer()
                 
-                Text("\(entry.sessionCount)")
-                    .font(.headline)
-                    .fontWeight(.bold)
+                if entry.achievementCount > 0 {
+                    HStack(spacing: 2) {
+                        Image(systemName: "trophy.fill")
+                            .font(.caption)
+                            .foregroundColor(.yellow)
+                        Text("\(entry.achievementCount)")
+                            .font(.caption)
+                            .fontWeight(.bold)
+                    }
+                }
             }
+            
+            Text("\(entry.sessionCount)")
+                .font(.headline)
+                .fontWeight(.bold)
             
             Text("Sessions")
                 .font(.caption)
@@ -102,9 +132,16 @@ struct SmallWidgetView: View {
             
             Spacer()
             
-            Text(entry.lastSessionDate, style: .relative)
-                .font(.caption2)
-                .foregroundColor(.secondary)
+            if entry.currentStreak > 0 {
+                HStack(spacing: 4) {
+                    Image(systemName: "flame.fill")
+                        .font(.caption2)
+                        .foregroundColor(.orange)
+                    Text("\(entry.currentStreak)")
+                        .font(.caption2)
+                        .fontWeight(.medium)
+                }
+            }
         }
         .padding()
     }
@@ -124,6 +161,14 @@ struct MediumWidgetView: View {
                     Text("Water Eject")
                         .font(.headline)
                         .fontWeight(.semibold)
+                    
+                    Spacer()
+                    
+                    if entry.isPremium {
+                        Image(systemName: "crown.fill")
+                            .font(.caption)
+                            .foregroundColor(.yellow)
+                    }
                 }
                 
                 VStack(alignment: .leading, spacing: 4) {
@@ -133,9 +178,27 @@ struct MediumWidgetView: View {
                     Text("This Week: \(entry.weeklySessions)")
                         .font(.caption)
                     
-                    Text("Last: \(entry.lastSessionDate, style: .relative)")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
+                    if entry.currentStreak > 0 {
+                        HStack(spacing: 4) {
+                            Image(systemName: "flame.fill")
+                                .font(.caption2)
+                                .foregroundColor(.orange)
+                            Text("\(entry.currentStreak) day streak")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    
+                    if entry.achievementCount > 0 {
+                        HStack(spacing: 4) {
+                            Image(systemName: "trophy.fill")
+                                .font(.caption2)
+                                .foregroundColor(.yellow)
+                            Text("\(entry.achievementCount) achievements")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    }
                 }
             }
             

@@ -21,14 +21,26 @@ struct MainTabView: View {
                 }
                 .tag(1)
             
-
+            AchievementsView()
+                .tabItem {
+                    Image(systemName: "trophy.fill")
+                    Text("Achievements")
+                }
+                .tag(2)
+            
+            AnalyticsDashboardView()
+                .tabItem {
+                    Image(systemName: "chart.bar.fill")
+                    Text("Analytics")
+                }
+                .tag(3)
             
             SettingsView()
                 .tabItem {
                     Image(systemName: "gear")
                     Text("Settings")
                 }
-                .tag(2)
+                .tag(4)
         }
         .accentColor(.blue)
         .onAppear {

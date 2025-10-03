@@ -262,6 +262,11 @@ class CoreDataService: ObservableObject {
         // Get last session date for recent activity display
         let lastSession = sessions.first?.startTime ?? Date()
         
+        // MARK: - Achievement Progress Update
+        // Update achievement progress when widget data is updated
+        let isPremium = UserDefaults.standard.bool(forKey: "isPremium")
+        AchievementService.shared.updateProgress(sessions: sessions, isPremium: isPremium)
+        
         // MARK: - Widget Data Storage
         // Save calculated statistics to shared UserDefaults for widget access
         let userDefaults = UserDefaults(suiteName: "group.com.infinitumimagery.watereject")

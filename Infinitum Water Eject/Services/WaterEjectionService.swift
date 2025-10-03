@@ -1,3 +1,21 @@
+/*
+ * ============================================================================
+ * INFINITUM WATER EJECT - WATER EJECTION SERVICE
+ * ============================================================================
+ * 
+ * FILE: WaterEjectionService.swift
+ * PURPOSE: Manages water ejection sessions and audio generation
+ * AUTHOR: Kevin Doyle Jr.
+ * CREATED: [7/5/2025]
+ * LAST MODIFIED: [7/9/2025]
+ *
+ * DESCRIPTION:
+ * This file contains the water ejection service implementation for managing
+ * water ejection sessions, audio generation, and session tracking.
+ * 
+ * ============================================================================
+ */
+
 import Foundation
 import AVFoundation
 import CoreData
@@ -218,23 +236,32 @@ class WaterEjectionService: NSObject, ObservableObject {
         let sampleRate: Double = 44100
         let duration = intensity.duration
         
-        // Generate audio buffer
+        // Generate audio buffer with safe unwrapping
         let frameCount = Int(sampleRate * duration)
-        let audioBuffer = AVAudioPCMBuffer(pcmFormat: AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!, frameCapacity: AVAudioFrameCount(frameCount))!
+        guard let audioFormat = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1),
+              let audioBuffer = AVAudioPCMBuffer(pcmFormat: audioFormat, frameCapacity: AVAudioFrameCount(frameCount)) else {
+            print("Failed to create audio buffer")
+            stopEjection()
+            return
+        }
         
         // Fill buffer with sine wave
-        if let channelData = audioBuffer.floatChannelData?[0] {
-            for frame in 0..<frameCount {
-                let time = Double(frame) / sampleRate
-                let amplitude: Float = 0.3 // Safe volume level
-                
-                // Create a sine wave with the calculated frequency
-                let sample = amplitude * Float(sin(2.0 * Double.pi * frequency * time))
-                // Add some variation to make it more effective
-                let variation = Float(sin(2.0 * Double.pi * 0.5 * time)) * 0.1
-                let finalSample = sample + variation
-                channelData[frame] = finalSample
-            }
+        guard let channelData = audioBuffer.floatChannelData?[0] else {
+            print("Failed to get audio channel data")
+            stopEjection()
+            return
+        }
+        
+        for frame in 0..<frameCount {
+            let time = Double(frame) / sampleRate
+            let amplitude: Float = 0.3 // Safe volume level
+            
+            // Create a sine wave with the calculated frequency
+            let sample = amplitude * Float(sin(2.0 * Double.pi * frequency * time))
+            // Add some variation to make it more effective
+            let variation = Float(sin(2.0 * Double.pi * 0.5 * time)) * 0.1
+            let finalSample = sample + variation
+            channelData[frame] = finalSample
         }
         
         audioBuffer.frameLength = AVAudioFrameCount(frameCount)
@@ -283,23 +310,32 @@ class WaterEjectionService: NSObject, ObservableObject {
         
         let sampleRate: Double = 44100
         
-        // Generate audio buffer
+        // Generate audio buffer with safe unwrapping
         let frameCount = Int(sampleRate * duration)
-        let audioBuffer = AVAudioPCMBuffer(pcmFormat: AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!, frameCapacity: AVAudioFrameCount(frameCount))!
+        guard let audioFormat = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1),
+              let audioBuffer = AVAudioPCMBuffer(pcmFormat: audioFormat, frameCapacity: AVAudioFrameCount(frameCount)) else {
+            print("Failed to create audio buffer")
+            stopEjection()
+            return
+        }
         
         // Fill buffer with sine wave
-        if let channelData = audioBuffer.floatChannelData?[0] {
-            for frame in 0..<frameCount {
-                let time = Double(frame) / sampleRate
-                let amplitude: Float = 0.3 // Safe volume level
-                
-                // Create a sine wave with the calculated frequency
-                let sample = amplitude * Float(sin(2.0 * Double.pi * frequency * time))
-                // Add some variation to make it more effective
-                let variation = Float(sin(2.0 * Double.pi * 0.5 * time)) * 0.1
-                let finalSample = sample + variation
-                channelData[frame] = finalSample
-            }
+        guard let channelData = audioBuffer.floatChannelData?[0] else {
+            print("Failed to get audio channel data")
+            stopEjection()
+            return
+        }
+        
+        for frame in 0..<frameCount {
+            let time = Double(frame) / sampleRate
+            let amplitude: Float = 0.3 // Safe volume level
+            
+            // Create a sine wave with the calculated frequency
+            let sample = amplitude * Float(sin(2.0 * Double.pi * frequency * time))
+            // Add some variation to make it more effective
+            let variation = Float(sin(2.0 * Double.pi * 0.5 * time)) * 0.1
+            let finalSample = sample + variation
+            channelData[frame] = finalSample
         }
         
         audioBuffer.frameLength = AVAudioFrameCount(frameCount)
@@ -402,21 +438,28 @@ class WaterEjectionService: NSObject, ObservableObject {
         let bufferDuration: TimeInterval = 1.0 // 1 second buffer for smooth transitions
         
         let frameCount = Int(sampleRate * bufferDuration)
-        let audioBuffer = AVAudioPCMBuffer(pcmFormat: AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!, frameCapacity: AVAudioFrameCount(frameCount))!
+        guard let audioFormat = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1),
+              let audioBuffer = AVAudioPCMBuffer(pcmFormat: audioFormat, frameCapacity: AVAudioFrameCount(frameCount)) else {
+            print("Failed to create realtime audio buffer")
+            return
+        }
         
         // Fill buffer with sine wave at new frequency
-        if let channelData = audioBuffer.floatChannelData?[0] {
-            for frame in 0..<frameCount {
-                let time = Double(frame) / sampleRate
-                let amplitude: Float = 0.3 // Safe volume level
-                
-                // Create a sine wave with the new frequency
-                let sample = amplitude * Float(sin(2.0 * Double.pi * frequency * time))
-                // Add some variation to make it more effective
-                let variation = Float(sin(2.0 * Double.pi * 0.5 * time)) * 0.1
-                let finalSample = sample + variation
-                channelData[frame] = finalSample
-            }
+        guard let channelData = audioBuffer.floatChannelData?[0] else {
+            print("Failed to get realtime audio channel data")
+            return
+        }
+        
+        for frame in 0..<frameCount {
+            let time = Double(frame) / sampleRate
+            let amplitude: Float = 0.3 // Safe volume level
+            
+            // Create a sine wave with the new frequency
+            let sample = amplitude * Float(sin(2.0 * Double.pi * frequency * time))
+            // Add some variation to make it more effective
+            let variation = Float(sin(2.0 * Double.pi * 0.5 * time)) * 0.1
+            let finalSample = sample + variation
+            channelData[frame] = finalSample
         }
         
         audioBuffer.frameLength = AVAudioFrameCount(frameCount)
@@ -478,4 +521,4 @@ struct SessionStats {
     var averageDurationMinutes: Double {
         return averageDuration / 60.0
     }
-} 
+}

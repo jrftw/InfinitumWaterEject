@@ -343,28 +343,28 @@ struct StatisticsView: View {
                             .fontWeight(.bold)
                         
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 16) {
-                            StatCard(
+                            HistoryStatCard(
                                 title: "Total Sessions",
                                 value: "\(stats.totalSessions)",
                                 icon: "number.circle.fill",
                                 color: .blue
                             )
                             
-                            StatCard(
+                            HistoryStatCard(
                                 title: "Success Rate",
                                 value: "\(Int(stats.completionRate * 100))%",
                                 icon: "percent",
                                 color: .green
                             )
                             
-                            StatCard(
+                            HistoryStatCard(
                                 title: "Total Time",
                                 value: String(format: "%.1f hours", stats.totalDurationMinutes / 60),
                                 icon: "clock.fill",
                                 color: .purple
                             )
                             
-                            StatCard(
+                            HistoryStatCard(
                                 title: "Avg Duration",
                                 value: String(format: "%.1f min", stats.averageDurationMinutes),
                                 icon: "timer",
@@ -428,7 +428,7 @@ struct StatisticsView: View {
 }
 
 @available(iOS 16.0, *)
-struct StatCard: View {
+struct HistoryStatCard: View {
     let title: String
     let value: String
     let icon: String
