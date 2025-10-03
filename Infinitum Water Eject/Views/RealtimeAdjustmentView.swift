@@ -151,7 +151,7 @@ struct RealtimeAdjustmentView: View {
             .iphone: 165.0,
             .ipad: 220.0,
             .macbook: 440.0,
-            .applewatch: 880.0,
+            .applewatch: 880.0, // (temporarily disabled)
             .airpods: 660.0,
             .other: 330.0
         ]
@@ -165,7 +165,7 @@ struct RealtimeAdjustmentView: View {
             .iphone: 165.0,
             .ipad: 220.0,
             .macbook: 440.0,
-            .applewatch: 880.0,
+            .applewatch: 880.0, // (temporarily disabled)
             .airpods: 660.0,
             .other: 330.0
         ]

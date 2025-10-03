@@ -234,4 +234,4 @@ group.com.infinitumimagery.watereject
 **Status**: All three major features are now complete and ready for production use.
 
 **Last Updated**: January 2025
-**Version**: 1.0.1 Build 1 
+**Version**: 1.0.1 Build 2 

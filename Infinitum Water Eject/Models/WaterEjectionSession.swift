@@ -300,7 +300,7 @@ enum DeviceType: String, CaseIterable, Codable {
         case .iphone: return "iphone"                    // iPhone icon
         case .ipad: return "ipad"                        // iPad icon
         case .macbook: return "laptopcomputer"           // MacBook icon
-        case .applewatch: return "applewatch"            // Apple Watch icon
+        case .applewatch: return "applewatch"            // Apple Watch icon (temporarily disabled)
         case .airpods: return "airpods"                  // AirPods icon
         case .other: return "device.phone.portrait"      // Generic device icon
         }
@@ -313,7 +313,7 @@ enum DeviceType: String, CaseIterable, Codable {
         case .iphone: return .blue                       // iPhone blue
         case .ipad: return .purple                       // iPad purple
         case .macbook: return .gray                       // MacBook gray
-        case .applewatch: return .green                   // Apple Watch green
+        case .applewatch: return .green                   // Apple Watch green (temporarily disabled)
         case .airpods: return .orange                     // AirPods orange
         case .other: return .secondary                     // Other secondary
         }

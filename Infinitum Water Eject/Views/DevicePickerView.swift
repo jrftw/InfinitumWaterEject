@@ -64,7 +64,7 @@ struct DevicePickerView: View {
         case .macbook:
             return "MacBook models with enhanced audio"
         case .applewatch:
-            return "Apple Watch with high-frequency output"
+            return "Apple Watch with high-frequency output" // (temporarily disabled)
         case .airpods:
             return "AirPods with specialized frequencies"
         case .other:

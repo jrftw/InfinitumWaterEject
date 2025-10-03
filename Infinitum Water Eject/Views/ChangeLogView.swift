@@ -15,10 +15,13 @@ struct ChangeLogView: View {
                     .fontWeight(.bold)
                     .padding(.top)
                 
-               // ChangeLogSection(version: "1.0.2 Build 1", date: "2025-07-09", changes: [
-                //     "Introduced Ads",
-                //     "Introduced Subscriptions & Premium Features"
-                //    ])
+                ChangeLogSection(version: "1.0.1 Build 2", date: "2025-07-09", changes: [
+                    "Updated app version to 1.0.1 Build 2",
+                    "Temporarily disabled Apple Watch functionality",
+                    "Commented out watch-related code for future re-enablement",
+                    "Fixed watch app icon validation issues",
+                    "Improved project structure and build configuration"
+                ])
                 
                 ChangeLogSection(version: "1.0.1 Build 1", date: "2025-07-08", changes: [
                     "Updated app version to 1.0.1 Build 1",

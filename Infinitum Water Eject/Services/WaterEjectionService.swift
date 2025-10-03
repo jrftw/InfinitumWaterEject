@@ -212,7 +212,7 @@ class WaterEjectionService: NSObject, ObservableObject {
             .iphone: 165.0,    // E3 note - good for iPhone speakers
             .ipad: 220.0,      // A3 note - optimized for iPad speakers
             .macbook: 440.0,   // A4 note - good for MacBook speakers
-            .applewatch: 880.0, // A5 note - high frequency for small speakers
+            .applewatch: 880.0, // A5 note - high frequency for small speakers (temporarily disabled)
             .airpods: 660.0,   // E5 note - optimized for AirPods
             .other: 330.0      // E4 note - general purpose
         ]
@@ -296,7 +296,7 @@ class WaterEjectionService: NSObject, ObservableObject {
             .iphone: 165.0,    // E3 note - good for iPhone speakers
             .ipad: 220.0,      // A3 note - optimized for iPad speakers
             .macbook: 440.0,   // A4 note - good for MacBook speakers
-            .applewatch: 880.0, // A5 note - high frequency for small speakers
+            .applewatch: 880.0, // A5 note - high frequency for small speakers (temporarily disabled)
             .airpods: 660.0,   // E5 note - optimized for AirPods
             .other: 330.0      // E4 note - general purpose
         ]
@@ -416,7 +416,7 @@ class WaterEjectionService: NSObject, ObservableObject {
             .iphone: 165.0,    // E3 note - good for iPhone speakers
             .ipad: 220.0,      // A3 note - optimized for iPad speakers
             .macbook: 440.0,   // A4 note - good for MacBook speakers
-            .applewatch: 880.0, // A5 note - high frequency for small speakers
+            .applewatch: 880.0, // A5 note - high frequency for small speakers (temporarily disabled)
             .airpods: 660.0,   // E5 note - optimized for AirPods
             .other: 330.0      // E4 note - general purpose
         ]

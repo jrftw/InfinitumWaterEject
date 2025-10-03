@@ -1,5 +1,9 @@
 import SwiftUI
 
+// MARK: - APPLE WATCH APP (TEMPORARILY DISABLED)
+// Uncomment the following code when re-enabling Apple Watch support
+
+/*
 #if os(watchOS)
 @main
 struct WaterEjectWatchApp: App {
@@ -124,4 +128,5 @@ struct WatchMainView: View {
 #Preview {
     WatchMainView()
 }
-#endif 
+#endif
+*/ 

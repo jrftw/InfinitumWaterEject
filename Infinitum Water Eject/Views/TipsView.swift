@@ -34,7 +34,7 @@ struct TipsView: View {
                         case .macbook:
                             MacBookTipsView()
                         case .applewatch:
-                            AppleWatchTipsView()
+                            AppleWatchTipsView() // (temporarily disabled)
                         case .airpods:
                             AirPodsTipsView()
                         case .other:

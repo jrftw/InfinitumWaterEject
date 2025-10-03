@@ -1,5 +1,9 @@
 import SwiftUI
 
+// MARK: - APPLE WATCH COMPLICATIONS (TEMPORARILY DISABLED)
+// Uncomment the following code when re-enabling Apple Watch support
+
+/*
 #if os(watchOS)
 import ClockKit
 
@@ -226,4 +230,5 @@ struct WaterEjectRectangularView: View {
         .padding()
     }
 }
-#endif 
+#endif
+*/ 
