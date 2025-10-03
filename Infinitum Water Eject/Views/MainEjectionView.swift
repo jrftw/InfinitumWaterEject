@@ -4,6 +4,7 @@ import SwiftUI
 struct MainEjectionView: View {
     @StateObject private var waterEjectionService = WaterEjectionService.shared
     @StateObject private var subscriptionService = SubscriptionService.shared
+    @Environment(\.appTheme) var theme: HolidayTheme
     
     @State private var selectedDevice: DeviceType = detectCurrentDevice()
     @State private var selectedIntensity: IntensityLevel = .medium
@@ -203,7 +204,7 @@ struct MainEjectionView: View {
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 50)
-                                .background(Color.blue)
+                                .background(theme.gradient)
                                 .cornerRadius(12)
                             }
                             .disabled(waterEjectionService.isPlaying)

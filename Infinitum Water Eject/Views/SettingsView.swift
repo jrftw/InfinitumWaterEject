@@ -6,7 +6,8 @@ struct SettingsView: View {
     @StateObject private var coreDataService = CoreDataService.shared
     @StateObject private var notificationService = NotificationService.shared
     @StateObject private var subscriptionService = SubscriptionService.shared
-    @EnvironmentObject private var themeManager: ThemeManager
+    @EnvironmentObject private var themeService: ThemeService
+    @Environment(\.appTheme) var theme: HolidayTheme
     
     @State private var showingTips = false
     @State private var showingSupport = false
@@ -83,57 +84,50 @@ struct SettingsView: View {
                 
                 // App Settings Section
                 Section(NSLocalizedString("App Settings", comment: "App settings section")) {
-                    // Theme Selection
-                    HStack {
-                        Image(systemName: "paintbrush.fill")
-                            .foregroundColor(.purple)
-                            .frame(width: 20)
-                        
-                        Text(NSLocalizedString("Theme", comment: "Theme label"))
-                        
-                        Spacer()
-                        
-                        Picker(
-                            NSLocalizedString("Theme", comment: "Theme label"),
-                            selection: Binding(
-                                get: { userSettings.theme },
-                                set: { newTheme in
-                                    var updatedSettings = userSettings
-                                    updatedSettings.theme = newTheme
-                                    coreDataService.saveUserSettings(updatedSettings)
-                                    themeManager.setTheme(newTheme)
-                                }
-                            )
-                        ) {
-                            ForEach(AppTheme.allCases, id: \.self) { theme in
-                                HStack {
-                                    Image(systemName: theme.icon)
-                                    Text(theme.displayName)
-                                }
-                                .tag(theme)
+                    // Holiday Theme Settings
+                    Button(action: { themeService.toggleThemeSettings() }) {
+                        HStack {
+                            Image(systemName: "paintbrush.fill")
+                                .foregroundColor(theme.primaryColor)
+                                .frame(width: 20)
+                            
+                            Text(NSLocalizedString("Holiday Themes", comment: "Holiday themes label"))
+                            
+                            Spacer()
+                            
+                            HStack(spacing: 8) {
+                                Image(systemName: theme.icon)
+                                    .foregroundColor(theme.primaryColor)
+                                
+                                Text(theme.name)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
                             }
                         }
-                        .pickerStyle(MenuPickerStyle())
                     }
                     
-                    // Theme Preview
+                    // Automatic Theme Toggle
                     HStack {
-                        Image(systemName: "eye.fill")
-                            .foregroundColor(.blue)
+                        Image(systemName: "calendar")
+                            .foregroundColor(theme.primaryColor)
                             .frame(width: 20)
                         
-                        Text(NSLocalizedString("Current Theme", comment: "Current theme label"))
+                        Text(NSLocalizedString("Automatic Holiday Themes", comment: "Automatic holiday themes label"))
                         
                         Spacer()
                         
-                        HStack(spacing: 8) {
-                            Image(systemName: userSettings.theme.icon)
-                                .foregroundColor(userSettings.theme == .light ? .orange : userSettings.theme == .dark ? .blue : .gray)
-                            
-                            Text(userSettings.theme.displayName)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
+                        Toggle("", isOn: Binding(
+                            get: { themeService.isAutomaticThemeEnabled },
+                            set: { isEnabled in
+                                if isEnabled {
+                                    themeService.enableAutomaticTheme()
+                                }
+                            }
+                        ))
                     }
                     
                     // Notifications Toggle
@@ -398,16 +392,14 @@ struct SettingsView: View {
         .sheet(isPresented: $showingPremiumOffer) {
             PremiumOfferView()
         }
+        .sheet(isPresented: $themeService.isThemeSettingsVisible) {
+            ThemeSettingsView(themeService: themeService)
+        }
             // .sheet(isPresented: $showingPremiumOffer) {
             //     PremiumOfferView()
             // }
             .onAppear {
-                // Sync theme from ThemeManager
-                if userSettings.theme != themeManager.currentTheme {
-                    var updatedSettings = userSettings
-                    updatedSettings.theme = themeManager.currentTheme
-                    coreDataService.saveUserSettings(updatedSettings)
-                }
+                // Theme is now managed by the new HolidayThemeManager
             }
         }
     }

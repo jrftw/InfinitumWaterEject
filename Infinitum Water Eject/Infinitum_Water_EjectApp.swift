@@ -79,7 +79,7 @@ struct Infinitum_Water_EjectApp: App {
     
     /// Manages the app's theme and color scheme preferences
     /// Provides dark/light mode switching and custom theme support
-    @StateObject private var themeManager = ThemeManager.shared
+    @StateObject private var themeService = ThemeService()
     
     /// Handles AdMob advertisement integration and revenue generation
     /// Manages banner ads, interstitial ads, and ad loading states
@@ -97,8 +97,8 @@ struct Infinitum_Water_EjectApp: App {
                 // Displays the primary tab-based navigation interface
                 // Applies theme preferences and provides environment objects
                 MainTabView()
-                    .preferredColorScheme(themeManager.colorScheme)  // Applies user's color scheme preference
-                    .environmentObject(themeManager)                 // Makes theme manager available to all child views
+                    .environmentObject(themeService)                 // Makes theme service available to all child views
+                    .environment(\.appTheme, themeService.currentTheme) // Provides current theme to all views
             } else {
                 // MARK: - Incompatible iOS Version Fallback
                 // Displays a user-friendly error message for devices running iOS 15 or earlier
@@ -128,8 +128,8 @@ struct Infinitum_Water_EjectApp: App {
                         .padding(.horizontal)
                 }
                 .padding()
-                .preferredColorScheme(themeManager.colorScheme)  // Still applies theme even in error state
-                .environmentObject(themeManager)                 // Provides theme manager for consistent styling
+                .environmentObject(themeService)                 // Provides theme service for consistent styling
+                .environment(\.appTheme, themeService.currentTheme) // Provides current theme to all views
             }
         }
     }

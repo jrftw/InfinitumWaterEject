@@ -3,6 +3,8 @@ import SwiftUI
 @available(iOS 16.0, *)
 struct MainTabView: View {
     @StateObject private var subscriptionService = SubscriptionService.shared
+    @EnvironmentObject var themeService: ThemeService
+    @Environment(\.appTheme) var theme: HolidayTheme
     @State private var selectedTab = 0
     
     var body: some View {
@@ -42,7 +44,8 @@ struct MainTabView: View {
                 }
                 .tag(4)
         }
-        .accentColor(.blue)
+        .accentColor(theme.primaryColor)
+        .themedBackground(theme)
         .onAppear {
             // Request notification permissions on first launch
             NotificationService.shared.requestPermission()
