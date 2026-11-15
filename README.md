@@ -1,6 +1,8 @@
 # Infinitum Water Eject
 
-Native SwiftUI iPhone/iPad utility. This branch prepares **1.0.2 (1)** for iOS 16+.
+Native SwiftUI iPhone/iPad utility. This branch prepares **1.0.3 (1)** for iOS 16+.
+
+The creator-facing release record is in [CHANGELOG.md](CHANGELOG.md); customer release history is available in Settings → What’s New. Version 1.0.2 submission assets are retained separately. This branch does not submit a release.
 
 ## Current features
 
@@ -25,7 +27,7 @@ xcodebuild -project 'Infinitum Water Eject.xcodeproj' \
 
 `WaterEjectTests` runs native audio/history, placement-cap, lifetime purchase/refund, and accelerated subscription-expiry regression checks. StoreKit tests use a local configuration and do not charge real money. The test target requires iOS 17+ with the installed Xcode; the app and widget deployment target remains iOS 16.
 
-For screenshot capture, Debug accepts `--snapshot-route eject`, `--snapshot-route tools` or `--snapshot-route history`. These arguments only select a screen and suppress ad-consent UI for captures; they do not grant Premium or start audio. Release does not include this path.
+For screenshot capture, Debug accepts `--snapshot-route eject`, `--snapshot-route tools` `--snapshot-route history` or `--snapshot-route settings`. These arguments only select a screen and suppress ad-consent UI for captures; they do not grant Premium or start audio. Release does not include this path.
 
 ## Release configuration
 
@@ -41,7 +43,7 @@ Production ad units are in the app's Info.plist:
 
 Interstitial eligibility: after any completed eject cycle lasting at least 25 seconds, once at least 25 seconds have elapsed in the app, at least 3 minutes apart, at most 3 per local day. Every free installation is eligible; no banner-only holdout is applied. Banners adapt to the available layout width. The AdMob unit also caps interstitial impressions to 3 per 24 hours. Rewarded ads are shown only after explicit opt-in and grant access only through the SDK reward callback.
 
-`release/store-localizations.json` backs up the 10 store descriptions/promotional texts/keywords/release notes prepared for the next version. `release/website-content.html` backs up the published article at https://infinitumlive.com/infinitum-water-eject/. The page has a focused SEO title and meta description, the existing canonical URL, SoftwareApplication structured data, FAQs, accurate advertising/privacy copy, and app-specific social artwork. It identifies 1.0.2 features as forthcoming until App Review approval and release.
+`release/store-localizations.json` backs up the 10 store descriptions/promotional texts/keywords/release notes prepared for version 1.0.2. `release/website-content.html` backs up the published article at https://infinitumlive.com/infinitum-water-eject/. The page has a focused SEO title and meta description, the existing canonical URL, SoftwareApplication structured data, FAQs, accurate advertising/privacy copy, and app-specific social artwork. It identifies 1.0.2 features as forthcoming until App Review approval and release.
 
 Water Eject-specific European and US privacy messages are published in AdMob, and the existing published IDFA explainer now includes this app. UMP completes the consent flow before any ad request. Info.plist includes the ATT explanation and 50 SKAdNetwork identifiers from Google’s official integration guide. App Store privacy labels declare the pinned Google SDK data categories, linkage, purposes, and optional device-ID tracking. The lifetime purchase and actual paywall screenshot have been added to the draft review submission. Fresh iPhone and iPad screenshots are uploaded.
 

@@ -1,12 +1,16 @@
 import SwiftUI
 import Foundation
+import Combine
 
 class ThemeService: ObservableObject {
-    @Published var themeManager: HolidayThemeManager
+    @Published private(set) var themeManager: HolidayThemeManager
     @Published var isThemeSettingsVisible: Bool = false
     
-    init() {
-        self.themeManager = HolidayThemeManager()
+    private var themeChanges: AnyCancellable?
+
+    init(themeManager: HolidayThemeManager = HolidayThemeManager()) {
+        self.themeManager = themeManager
+        themeChanges = themeManager.objectWillChange.sink { [weak self] _ in self?.objectWillChange.send() }
         startThemeUpdateTimer()
     }
     
@@ -33,6 +37,11 @@ class ThemeService: ObservableObject {
         themeManager.enableAutomaticTheme()
     }
     
+    func setAutomaticThemeEnabled(_ enabled: Bool) {
+        if enabled { themeManager.enableAutomaticTheme() }
+        else { themeManager.setTheme(themeManager.currentTheme) }
+    }
+
     func toggleThemeSettings() {
         isThemeSettingsVisible.toggle()
     }
@@ -133,15 +142,13 @@ struct ThemeSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 Section("Automatic Themes") {
                     Toggle("Enable Automatic Holiday Themes", isOn: Binding(
                         get: { themeService.isAutomaticThemeEnabled },
                         set: { isEnabled in
-                            if isEnabled {
-                                themeService.enableAutomaticTheme()
-                            }
+                            themeService.setAutomaticThemeEnabled(isEnabled)
                         }
                     ))
                     

@@ -27,8 +27,12 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES"
+      shouldUseLaunchSchemeArgsEnv = "NO"
       shouldAutocreateTestPlan = "YES">
+      <CommandLineArguments>
+         <CommandLineArgument argument="--snapshot-route" isEnabled="YES" />
+         <CommandLineArgument argument="eject" isEnabled="YES" />
+      </CommandLineArguments>
       <Testables>
          <TestableReference skipped="NO">
             <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="DA0000000000000000000003" BuildableName="WaterEjectTests.xctest" BlueprintName="WaterEjectTests" ReferencedContainer="container:Infinitum Water Eject.xcodeproj" />

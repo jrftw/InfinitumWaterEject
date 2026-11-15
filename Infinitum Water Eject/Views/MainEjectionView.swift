@@ -6,6 +6,7 @@ struct MainEjectionView: View {
     @StateObject private var audio = WaterEjectionService.shared
     @StateObject private var purchases = SubscriptionService.shared
     @StateObject private var ads = AdMobService.shared
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.appTheme) var theme: HolidayTheme
     @AppStorage("useCustomIntensity") private var usingCustom = false
     @AppStorage("selectedEjectionIntensity") private var intensityRaw = IntensityLevel.medium.rawValue
@@ -17,12 +18,14 @@ struct MainEjectionView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: 20) {
+                    if !dynamicTypeSize.isAccessibilitySize {
                     Image(systemName: audio.isPlaying ? "waveform" : "drop.circle.fill")
-                        .font(.system(size: 72)).foregroundStyle(theme.primaryColor).accessibilityHidden(true)
-                    Text(audio.isPlaying ? "Sound in progress" : "Clearer sound starts here")
-                        .font(.largeTitle.bold()).multilineTextAlignment(.center)
-                    Text("Place this device speaker-side down. Start at a comfortable volume.")
+                        .font(.system(size: 48)).foregroundStyle(theme.primaryColor).accessibilityHidden(true)
+                    Text(audio.isPlaying ? "Sound in progress" : "Your speaker tools, one tap away")
+                        .font(.title.bold()).multilineTextAlignment(.center)
+                    }
+                    Text(dynamicTypeSize.isAccessibilitySize ? "Speaker facing down. Use a comfortable volume." : "Place this device speaker-side down. Start at a comfortable volume.")
                         .foregroundStyle(.secondary).multilineTextAlignment(.center)
                     if audio.isPlaying {
                         if audio.isRealtimeMode { RealtimeAdjustmentView(waterEjectionService: audio) }
@@ -35,11 +38,24 @@ struct MainEjectionView: View {
                         }
                     } else {
                         Button { showIntensity = true } label: {
-                            HStack {
-                                Label("Cycle settings", systemImage: "slider.horizontal.3")
-                                Spacer()
-                                Text(usingCustom ? "Custom" : intensity.displayName.capitalized).foregroundStyle(.secondary)
-                                Image(systemName: "chevron.right")
+                            Group {
+                                if dynamicTypeSize.isAccessibilitySize {
+                                    VStack(alignment: .leading, spacing: 12) {
+                                        Text("Cycle settings").font(.headline)
+                                        HStack {
+                                            Text(usingCustom ? "Custom" : intensity.displayName).foregroundStyle(.secondary)
+                                            Spacer()
+                                            Image(systemName: "chevron.right")
+                                        }
+                                    }
+                                } else {
+                                    HStack {
+                                        Label("Cycle settings", systemImage: "slider.horizontal.3")
+                                        Spacer()
+                                        Text(usingCustom ? "Custom" : intensity.displayName).foregroundStyle(.secondary)
+                                        Image(systemName: "chevron.right")
+                                    }
+                                }
                             }.padding().background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16))
                         }.buttonStyle(.plain)
                         Button {
@@ -58,10 +74,16 @@ struct MainEjectionView: View {
                                 Button("Open speaker test") { AppNavigation.shared.route("tools") }
                             }.padding().background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16))
                         }
-                        HStack {
+                        ViewThatFits(in: .horizontal) {
+                          HStack {
                             Button { showTips = true } label: { Label("Safety tips", systemImage: "lightbulb") }
                             Spacer()
                             Button { AppNavigation.shared.route("tools") } label: { Label("Speaker tools", systemImage: "waveform") }
+                          }
+                          VStack(spacing: 12) {
+                            Button("Safety tips") { showTips = true }
+                            Button("Speaker tools") { AppNavigation.shared.route("tools") }
+                          }
                         }.buttonStyle(.bordered)
                         Text("Audio plays through this device only. Disconnect headphones and Bluetooth. This app cannot repair damage or measure dryness.")
                             .font(.footnote).foregroundStyle(.secondary)

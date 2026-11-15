@@ -319,8 +319,14 @@ class HolidayThemeManager: ObservableObject {
     @Published var currentTheme: HolidayTheme
     @Published var isAutomaticThemeEnabled: Bool = true
     
-    init() {
-        self.currentTheme = Self.getAutomaticTheme()
+    private let defaults: UserDefaults
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        let automatic = defaults.object(forKey: "holidayThemeAutomatic") as? Bool ?? true
+        self.isAutomaticThemeEnabled = automatic
+        let saved = defaults.string(forKey: "holidayThemeType")
+        let themes: [HolidayTheme] = [.defaultTheme, .halloween, .christmas, .valentines, .stPatricks, .easter, .independence, .thanksgiving, .newYear]
+        self.currentTheme = automatic ? Self.getAutomaticTheme() : (themes.first { $0.type.rawValue == saved } ?? .defaultTheme)
     }
     
     // MARK: - Automatic Theme Detection
@@ -388,11 +394,14 @@ class HolidayThemeManager: ObservableObject {
     func setTheme(_ theme: HolidayTheme) {
         currentTheme = theme
         isAutomaticThemeEnabled = false
+        defaults.set(false, forKey: "holidayThemeAutomatic")
+        defaults.set(theme.type.rawValue, forKey: "holidayThemeType")
     }
     
     // MARK: - Enable Automatic Theme
     func enableAutomaticTheme() {
         isAutomaticThemeEnabled = true
+        defaults.set(true, forKey: "holidayThemeAutomatic")
         currentTheme = Self.getAutomaticTheme()
     }
     

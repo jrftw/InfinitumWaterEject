@@ -103,18 +103,28 @@ class CoreDataService: ObservableObject {
     
     /// Core Data persistent container for data storage
     /// Manages the data model and persistent store coordination
+    private static let managedObjectModel = NSPersistentContainer(name: "WaterEjectDataModel").managedObjectModel
+    private let fallbackSettings = UserSettings()
     private let container: NSPersistentContainer
+    private let inMemory: Bool
     
     // MARK: - Initialization
     // Private initializer for singleton pattern with Core Data setup
     
     /// Initializes the Core Data service with persistent container setup
     /// Loads the data model and configures error handling
-    init() {
+    init(inMemory: Bool = false) {
+        self.inMemory = inMemory
         // MARK: - Persistent Container Setup
         // Create persistent container with the app's data model name
-        container = NSPersistentContainer(name: "WaterEjectDataModel")
+        container = NSPersistentContainer(name: "WaterEjectDataModel", managedObjectModel: Self.managedObjectModel)
         
+        if inMemory {
+            let store = NSPersistentStoreDescription()
+            store.type = NSInMemoryStoreType
+            container.persistentStoreDescriptions = [store]
+        }
+
         // MARK: - Store Loading
         // Load persistent stores with error handling
         // Prints error messages for debugging but continues operation
@@ -198,19 +208,12 @@ class CoreDataService: ObservableObject {
             let results = try context.fetch(request)
             if let entity = results.first {
                 return entity.toUserSettings
-            } else {
-                // MARK: - Default Settings Creation
-                // Create and save default settings if none exist
-                let defaultSettings = UserSettings()
-                saveUserSettings(defaultSettings)
-                return defaultSettings
             }
+            // Reading settings during SwiftUI rendering must not publish or write data.
+            return fallbackSettings
         } catch {
             print("Error fetching user settings: \(error)")
-            // MARK: - Error Fallback
-            // Return default settings on error for graceful degradation
-            let defaultSettings = UserSettings()
-            return defaultSettings
+            return fallbackSettings
         }
     }
     
@@ -241,6 +244,7 @@ class CoreDataService: ObservableObject {
     /// Updates widget data with current session statistics
     /// Calculates various metrics and triggers widget refresh
     private func updateWidgetData() {
+        guard !inMemory else { return }
         // MARK: - Session Data Retrieval
         // Get all sessions for statistics calculation
         let sessions = getWaterEjectionSessions()
@@ -311,6 +315,15 @@ class CoreDataService: ObservableObject {
     
     /// Deletes a water ejection session from Core Data storage
     /// Uses session ID for precise deletion targeting
+    func deleteSessionHistory() throws {
+        let request: NSFetchRequest<SessionEntity> = SessionEntity.fetchRequest()
+        let sessions = try context.fetch(request)
+        objectWillChange.send()
+        sessions.forEach { context.delete($0) }
+        do { try context.save() } catch { context.rollback(); throw error }
+        updateWidgetData()
+    }
+
     func deleteWaterEjectionSession(_ session: WaterEjectionSession) {
         // MARK: - Fetch Request with Predicate
         // Create fetch request with ID predicate for precise deletion

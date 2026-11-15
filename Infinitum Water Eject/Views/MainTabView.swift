@@ -11,8 +11,7 @@ struct MainTabView: View {
         TabView(selection: $navigation.selectedTab) {
             MainEjectionView().tabItem { Label("Eject", systemImage: "drop.fill") }.tag(0)
             SpeakerToolsView().tabItem { Label("Tools", systemImage: "waveform") }.tag(1)
-            HistoryView().tabItem { Label("History", systemImage: "clock.arrow.circlepath") }.tag(2)
-            AnalyticsDashboardView().tabItem { Label("Analytics", systemImage: "chart.bar.fill") }.tag(3)
+            HistoryView().tabItem { Label("Activity", systemImage: "clock.arrow.circlepath") }.tag(2)
             SettingsView().tabItem { Label("Settings", systemImage: "gear") }.tag(4)
         }
         .tint(theme.primaryColor).themedBackground(theme)
@@ -26,7 +25,7 @@ struct MainTabView: View {
            let index = ProcessInfo.processInfo.arguments.firstIndex(of: "--snapshot-route"),
            ProcessInfo.processInfo.arguments.indices.contains(index + 1) {
             let route = ProcessInfo.processInfo.arguments[index + 1]
-            if ["tools", "eject", "history"].contains(route) { navigation.route(route) }
+            if ["tools", "eject", "history", "settings"].contains(route) { navigation.route(route) }
             appliedSnapshotRoute = true
         }
         #endif

@@ -1,399 +1,52 @@
 import SwiftUI
 import MessageUI
 
-@available(iOS 16.0, *)
 struct SupportHelpView: View {
-    @State private var selectedFAQ: String? = nil
+    @Environment(\.openURL) private var openURL
     @State private var showingMailView = false
-    @State private var mailResult: Result<MFMailComposeResult, Error>? = nil
-    
+    @State private var mailResult: Result<MFMailComposeResult, Error>?
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Header
-                    VStack(spacing: 8) {
-                        Text("Support & Help")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .multilineTextAlignment(.center)
-                            .lineLimit(nil)
-                            .minimumScaleFactor(0.8)
-                        
-                        Text("We're here to help you get the most out of Infinitum Water Eject")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                            .lineLimit(3)
-                            .minimumScaleFactor(0.9)
-                    }
-                    .padding(.top, 8)
-                    .padding(.horizontal)
-                    
-                    // Contact Section
-                    ContactSection(showingMailView: $showingMailView)
-                        .padding(.horizontal)
-                    
-                    // FAQ Section
-                    FAQSection(selectedFAQ: $selectedFAQ)
-                        .padding(.horizontal)
-                    
-                    // Additional Resources
-                    AdditionalResourcesSection()
-                        .padding(.horizontal)
-                    
-                    // Banner Ad at the bottom
-                    VStack(spacing: 0) {
-                        ConditionalBannerAdView(adUnitId: AdMobService.shared.getBannerAdUnitId())
-                    }
-                    .padding(.horizontal)
-                    .padding(.top, 20)
-                    
-                    Spacer(minLength: 20)
+        List {
+            Section("Contact") {
+                Button {
+                    if MFMailComposeViewController.canSendMail() { showingMailView = true }
+                    else { openURL(URL(string: "mailto:support@infinitumlive.com")!) }
+                } label: { Label("Email support", systemImage: "envelope") }
+                Text("support@infinitumlive.com").font(.footnote).foregroundStyle(.secondary)
+                Text("Include your app version, device model and what happened. Please do not send sensitive personal information.")
+            }
+            Section("Getting started") {
+                DisclosureGroup("How do I use Water Eject?") {
+                    Text("Read Safety Tips, disconnect headphones and charging cables, then choose a cycle on Eject. Start at a low system volume with this device’s speaker facing down. You can stop audio at any time.")
                 }
-                .padding(.vertical)
-            }
-            .navigationTitle("Support & Help")
-            .navigationBarTitleDisplayMode(.inline)
-            .sheet(isPresented: $showingMailView) {
-                MailView(result: $mailResult)
-            }
-        }
-    }
-}
-
-@available(iOS 16.0, *)
-struct ContactSection: View {
-    @Binding var showingMailView: Bool
-    
-    var body: some View {
-        VStack(spacing: 16) {
-            HStack {
-                Image(systemName: "envelope.fill")
-                    .foregroundColor(.blue)
-                    .font(.title2)
-                
-                Text("Contact Support")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                
-                Spacer()
-            }
-            
-            VStack(spacing: 12) {
-                // Email Button
-                Button(action: {
-                    showingMailView = true
-                }) {
-                    HStack {
-                        Image(systemName: "envelope.fill")
-                            .foregroundColor(.white)
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Email Support")
-                                .font(.headline)
-                                .fontWeight(.semibold)
-                            
-                            Text("support@infinitumlive.com")
-                                .font(.caption)
-                                .opacity(0.9)
-                        }
-                        
-                        Spacer()
-                        
-                        Image(systemName: "arrow.up.right")
-                            .font(.caption)
-                            .opacity(0.8)
-                    }
-                    .foregroundColor(.white)
-                    .padding()
-                    .background(Color.blue)
-                    .cornerRadius(12)
+                DisclosureGroup("Why is there no sound?") {
+                    Text("Check system volume and your audio route. Disconnect Bluetooth audio and headphones to use the built-in speaker. Stop the session before changing output, then try again.")
                 }
-                
-                // Contact Info Cards
-                VStack(spacing: 8) {
-                    ContactInfoCard(
-                        icon: "globe",
-                        title: "Website",
-                        detail: "infinitumlive.com",
-                        color: .green
-                    )
-                    
-                    ContactInfoCard(
-                        icon: "location.fill",
-                        title: "Location",
-                        detail: "Pittsburgh, PA, USA",
-                        color: .orange
-                    )
-                    
-                    ContactInfoCard(
-                        icon: "clock.fill",
-                        title: "Response Time",
-                        detail: "Within 24 hours",
-                        color: .purple
-                    )
+                DisclosureGroup("What do the cycle choices mean?") {
+                    Text("Short, Standard, Long and Extended choose different timers. Live tuning lets you adjust the tone during playback. These options do not indicate how wet a device is or guarantee a repair.")
+                }
+                DisclosureGroup("Can I use widgets or Siri?") {
+                    Text("Add Water Eject from the widget gallery. In Shortcuts, search for Water Eject to start a cycle, stop audio or open Speaker Tools. Siri opens the app before audio starts.")
                 }
             }
-        }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(16)
-    }
-}
-
-@available(iOS 16.0, *)
-struct ContactInfoCard: View {
-    let icon: String
-    let title: String
-    let detail: String
-    let color: Color
-    
-    var body: some View {
-        HStack {
-            Image(systemName: icon)
-                .foregroundColor(color)
-                .frame(width: 24, height: 24)
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                
-                Text(detail)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            
-            Spacer()
-        }
-        .padding(.vertical, 8)
-    }
-}
-
-@available(iOS 16.0, *)
-struct FAQSection: View {
-    @Binding var selectedFAQ: String?
-    
-    private let faqs: [FAQItemSupport] = [
-        FAQItemSupport(
-            id: "how-it-works",
-            question: "How does water and dust ejection work?",
-            answer: "The app plays tones through this device’s speaker. Sound may help move droplets near the speaker; it cannot remove internal moisture, clean ports, or confirm that a device is dry."
-        ),
-        FAQItemSupport(
-            id: "devices-supported",
-            question: "What devices are supported?",
-            answer: "This release supports iPhone and iPad with iOS 16 or later. Audio plays through the device running the app, not a nearby Watch or AirPods."
-        ),
-        FAQItemSupport(
-            id: "duration",
-            question: "How long should I run the ejection?",
-            answer: "Duration depends on the intensity level: Low (30 seconds), Medium (1 minute), High (2 minutes), Emergency (3 minutes), Realtime (5 minutes). Follow the on-screen timer and device-specific tips for best results."
-        ),
-        FAQItemSupport(
-            id: "safety",
-            question: "Is this app safe for my device?",
-            answer: "Start at a low system volume, disconnect headphones, and keep the speaker away from your ears. Stop if uncomfortable. Follow your manufacturer’s guidance for wet or damaged devices."
-        ),
-        FAQItemSupport(
-            id: "intensity-levels",
-            question: "What's the difference between intensity levels?",
-            answer: "Low: Gentle frequency for light water exposure. Medium: Standard frequency for normal water exposure. High: Strong frequency for heavy water exposure. Emergency: Maximum frequency for emergency situations. Realtime: Adjust frequency in real-time while running."
-        ),
-        FAQItemSupport(
-            id: "best-results",
-            question: "How do I get the best results?",
-            answer: "Remove cases and accessories, use gentle motion, avoid extreme temperatures, and let your device dry completely before use. Follow the device-specific tips in the app and use the appropriate intensity level for your situation."
-        ),
-        FAQItemSupport(
-            id: "realtime-mode",
-            question: "What is Realtime mode?",
-            answer: "Realtime mode allows you to adjust the frequency while the water and dust ejection is running. This is perfect for finding the optimal frequency for your specific situation. You can see the current frequency in real-time and adjust it using the slider."
-        ),
-        FAQItemSupport(
-            id: "data-privacy",
-            question: "Is my data private?",
-            answer: "Session history, presets and optional diagnostics stay on your device unless you share them. The free version uses Google AdMob, which handles advertising data under its own policies and your applicable privacy choices. Apple handles purchases."
-        )
-    ]
-    
-    var body: some View {
-        VStack(spacing: 16) {
-            HStack {
-                Image(systemName: "questionmark.circle.fill")
-                    .foregroundColor(.orange)
-                    .font(.title2)
-                
-                Text("Frequently Asked Questions")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                
-                Spacer()
-            }
-            
-            VStack(spacing: 12) {
-                ForEach(faqs) { faq in
-                    FAQAccordionItem(
-                        faq: faq,
-                        isExpanded: selectedFAQ == faq.id,
-                        onTap: {
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                if selectedFAQ == faq.id {
-                                    selectedFAQ = nil
-                                } else {
-                                    selectedFAQ = faq.id
-                                }
-                            }
-                        }
-                    )
+            Section("Purchases & presets") {
+                DisclosureGroup("How do I restore Premium?") {
+                    Text("Open Settings → Lifetime Premium → Restore purchases using the Apple Account that bought the upgrade. Lifetime Premium removes ads and enables preset saving. Your saved presets remain usable when a rewarded unlock expires.")
+                }
+                DisclosureGroup("Where are my sessions and presets stored?") {
+                    Text("They are stored on this device. Share a CSV from Settings to export session history. Deleting history keeps your purchases, saved presets and preferences. Removing the app may remove its local data.")
                 }
             }
-        }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(16)
+            Section("More help") {
+                NavigationLink("Safety tips") { TipsView(isPresentedAsSheet: false) }
+                Link("Water Eject website", destination: URL(string: "https://infinitumlive.com/infinitum-water-eject/")!)
+            }
+            Section { ConditionalBannerAdView(adUnitId: AdMobService.shared.getBannerAdUnitId()) }
+        }.navigationTitle("Help & Contact").navigationBarTitleDisplayMode(.inline)
+            .sheet(isPresented: $showingMailView) { MailView(result: $mailResult) }
     }
 }
 
-struct FAQItemSupport: Identifiable {
-    let id: String
-    let question: String
-    let answer: String
-}
-
-@available(iOS 16.0, *)
-struct FAQAccordionItem: View {
-    let faq: FAQItemSupport
-    let isExpanded: Bool
-    let onTap: () -> Void
-    
-    var body: some View {
-        VStack(spacing: 0) {
-            Button(action: onTap) {
-                HStack(spacing: 12) {
-                    Text(faq.question)
-                        .font(.headline)
-                        .fontWeight(.medium)
-                        .foregroundColor(.primary)
-                        .multilineTextAlignment(.leading)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .lineLimit(nil)
-                        .minimumScaleFactor(0.9)
-                    
-                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .foregroundColor(.blue)
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .frame(width: 20, height: 20)
-                }
-                .padding()
-            }
-            .buttonStyle(PlainButtonStyle())
-            
-            if isExpanded {
-                VStack(alignment: .leading, spacing: 12) {
-                    Divider()
-                        .padding(.horizontal)
-                    
-                    Text(faq.answer)
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.leading)
-                        .lineLimit(nil)
-                        .minimumScaleFactor(0.9)
-                        .padding(.horizontal)
-                        .padding(.bottom)
-                }
-                .transition(.opacity.combined(with: .move(edge: .top)))
-            }
-        }
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
-        .frame(maxWidth: .infinity)
-    }
-}
-
-@available(iOS 16.0, *)
-struct AdditionalResourcesSection: View {
-    var body: some View {
-        VStack(spacing: 16) {
-            HStack {
-                Image(systemName: "book.fill")
-                    .foregroundColor(.purple)
-                    .font(.title2)
-                
-                Text("Additional Resources")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                
-                Spacer()
-            }
-            
-            VStack(spacing: 12) {
-                ResourceCard(
-                    icon: "lightbulb.fill",
-                    title: "Safety Tips",
-                    description: "Learn best practices for water and dust ejection",
-                    color: .yellow
-                )
-                
-                ResourceCard(
-                    icon: "hand.raised.fill",
-                    title: "Privacy Policy",
-                    description: "How we protect your data",
-                    color: .green
-                )
-                
-                ResourceCard(
-                    icon: "doc.text.fill",
-                    title: "Terms of Service",
-                    description: "App usage terms and conditions",
-                    color: .blue
-                )
-            }
-        }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(16)
-    }
-}
-
-@available(iOS 16.0, *)
-struct ResourceCard: View {
-    let icon: String
-    let title: String
-    let description: String
-    let color: Color
-    
-    var body: some View {
-        HStack {
-            Image(systemName: icon)
-                .foregroundColor(color)
-                .frame(width: 24, height: 24)
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                
-                Text(description)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            
-            Spacer()
-            
-            Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
-        .padding(.vertical, 8)
-    }
-}
-
-// Mail View for email composition
 struct MailView: UIViewControllerRepresentable {
     @Binding var result: Result<MFMailComposeResult, Error>?
     
@@ -443,11 +96,3 @@ struct MailView: UIViewControllerRepresentable {
         }
     }
 }
-
-#Preview {
-    if #available(iOS 16.0, *) {
-        SupportHelpView()
-    } else {
-        Text("Requires iOS 16.0 or newer")
-    }
-} 
