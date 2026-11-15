@@ -8,7 +8,7 @@ final class AppNavigation: ObservableObject {
     @Published var selectedTab = 0
     private var pendingAction: String?
     func route(_ action: String) {
-        guard ["start", "stop", "tools", "eject", "history"].contains(action) else { return }
+        guard ["start", "stop", "tools", "eject", "history", "settings"].contains(action) else { return }
         pendingAction = action
         consumePendingAction()
     }
@@ -24,6 +24,7 @@ final class AppNavigation: ObservableObject {
         case "stop": WaterEjectionService.shared.stopEjection()
         case "tools": selectedTab = 1
         case "history": selectedTab = 2
+        case "settings": selectedTab = 4
         default: selectedTab = 0
         }
     }

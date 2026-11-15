@@ -1,547 +1,98 @@
 import SwiftUI
 
-@available(iOS 16.0, *)
 struct HistoryView: View {
-    @StateObject private var waterEjectionService = WaterEjectionService.shared
-    @State private var selectedFilter: HistoryFilter = .all
-    @State private var showingStats = false
-    
-    var filteredSessions: [WaterEjectionSession] {
-        let sessions = waterEjectionService.getSessionHistory()
-        
-        switch selectedFilter {
-        case .all:
-            return sessions
-        case .completed:
-            return sessions.filter { $0.isCompleted }
-        case .incomplete:
-            return sessions.filter { !$0.isCompleted }
-        case .today:
-            let today = Calendar.current.startOfDay(for: Date())
-            return sessions.filter { Calendar.current.isDate($0.startTime, inSameDayAs: today) }
-        case .week:
-            let weekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date()
-            return sessions.filter { $0.startTime >= weekAgo }
-        case .month:
-            let monthAgo = Calendar.current.date(byAdding: .month, value: -1, to: Date()) ?? Date()
-            return sessions.filter { $0.startTime >= monthAgo }
-        }
-    }
-    
-    private var filteredStats: SessionStats {
-        let sessions = filteredSessions
-        let duration = sessions.reduce(0) { $0 + $1.duration }
-        return SessionStats(totalSessions: sessions.count, completedSessions: sessions.filter(\.isCompleted).count,
-            totalDuration: duration, averageDuration: sessions.isEmpty ? 0 : duration / Double(sessions.count),
-            deviceStats: Dictionary(grouping: sessions, by: \.deviceType).mapValues(\.count),
-            intensityStats: Dictionary(grouping: sessions, by: \.intensityLevel).mapValues(\.count))
-    }
-
+    @ObservedObject private var data = CoreDataService.shared
+    @State private var filter: HistoryFilter = .all
+    @State private var pendingDelete: WaterEjectionSession?
+    private var sessions: [WaterEjectionSession] { filter.apply(to: data.getWaterEjectionSessions()) }
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                // Filter Picker
-                Picker("Filter", selection: $selectedFilter) {
-                    ForEach(HistoryFilter.allCases, id: \.self) { filter in
-                        Text(filter.displayName).tag(filter)
+            List {
+                Section {
+                    Picker("Show sessions", selection: $filter) {
+                        ForEach(HistoryFilter.allCases, id: \.self) { Text($0.displayName).tag($0) }
                     }
                 }
-                .pickerStyle(.menu)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-                
-                if filteredSessions.isEmpty {
-                    EmptyHistoryView(filter: selectedFilter)
+                if sessions.isEmpty {
+                    Section {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Label(filter == .all ? "Your sessions will appear here" : "No sessions in this view", systemImage: "clock.arrow.circlepath").font(.headline)
+                            Text("Completed and stopped cycles are saved on this device. Speaker tests are not added to history.").foregroundStyle(.secondary)
+                            Button("Open Water Eject") { AppNavigation.shared.route("eject") }
+                        }.padding(.vertical, 12)
+                    }
                 } else {
-                    ScrollView {
-                        VStack(spacing: 16) {
-                            // Statistics Card
-                            StatsCard(stats: filteredStats, filter: selectedFilter)
-                                .padding(.horizontal)
-                            
-                            // Sessions List
-                            LazyVStack(spacing: 8) {
-                                ForEach(filteredSessions.sorted(by: { $0.startTime > $1.startTime }), id: \.id) { session in
-                                    SessionRowView(session: session)
-                                        .padding(.horizontal)
+                    Section("In this view") {
+                        LabeledContent("Sessions", value: "\(sessions.count)")
+                        LabeledContent("Completed", value: "\(sessions.filter(\.isCompleted).count)")
+                        LabeledContent("Audio time", value: Duration.seconds(sessions.reduce(0) { $0 + $1.duration }).formatted(.time(pattern: .minuteSecond)))
+                    }
+                    Section("Session history") {
+                        ForEach(sessions) { session in
+                            VStack(alignment: .leading, spacing: 8) {
+                                ViewThatFits(in: .horizontal) {
+                                    HStack { sessionTitle(session); Spacer(); status(session) }
+                                    VStack(alignment: .leading, spacing: 8) { sessionTitle(session); status(session) }
                                 }
-                            }
-                            
-                            // Banner Ad at the bottom
-                            VStack(spacing: 0) {
-                                ConditionalBannerAdView(adUnitId: AdMobService.shared.getBannerAdUnitId())
-                            }
-                            .padding(.horizontal)
-                            .padding(.top, 20)
-                        }
-                        .padding(.vertical)
-                    }
-                }
-            }
-            .navigationTitle("History")
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationViewStyle(StackNavigationViewStyle())
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showingStats = true }) {
-                        Image(systemName: "chart.bar.fill")
-                    }
-                }
-            }
-        }
-        .sheet(isPresented: $showingStats) {
-            StatisticsView(stats: waterEjectionService.getSessionStats())
-        }
-    }
-    
-    private func deleteSessions(offsets: IndexSet) {
-        let sessionsToDelete = offsets.map { filteredSessions.sorted(by: { $0.startTime > $1.startTime })[$0] }
-        
-        for session in sessionsToDelete {
-            CoreDataService.shared.deleteWaterEjectionSession(session)
-        }
-    }
-}
-
-@available(iOS 16.0, *)
-struct EmptyHistoryView: View {
-    let filter: HistoryFilter
-    
-    var body: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "clock.arrow.circlepath")
-                .font(.system(size: 60))
-                .foregroundColor(.gray)
-            
-            Text("No Sessions Found")
-                .font(.title2)
-                .fontWeight(.semibold)
-            
-            Text(getEmptyMessage())
-                .font(.body)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-    
-    private func getEmptyMessage() -> String {
-        switch filter {
-        case .all:
-            return "Start your first water and dust ejection session to see it here"
-        case .completed:
-            return "No completed sessions found. Complete a session to see it here"
-        case .incomplete:
-            return "No incomplete sessions found"
-        case .today:
-            return "No sessions today. Start a new session to protect your device"
-        case .week:
-            return "No sessions in the last 7 days"
-        case .month:
-            return "No sessions in the last 30 days"
-        }
-    }
-}
-
-@available(iOS 16.0, *)
-struct StatsCard: View {
-    let stats: SessionStats
-    let filter: HistoryFilter
-    
-    var body: some View {
-        VStack(spacing: 16) {
-            HStack {
-                Text("Statistics")
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                
-                Spacer()
-                
-                Text(filter.displayName)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color(.systemGray5))
-                    .cornerRadius(8)
-            }
-            
-            HStack(spacing: 20) {
-                StatItem(
-                    title: "Total",
-                    value: "\(stats.totalSessions)",
-                    icon: "number.circle.fill",
-                    color: .blue
-                )
-                
-                StatItem(
-                    title: "Completed",
-                    value: "\(stats.completedSessions)",
-                    icon: "checkmark.circle.fill",
-                    color: .green
-                )
-                
-                StatItem(
-                    title: "Completion Rate",
-                    value: "\(Int(stats.completionRate * 100))%",
-                    icon: "percent",
-                    color: .orange
-                )
-            }
-            
-            HStack(spacing: 20) {
-                StatItem(
-                    title: "Total Time",
-                    value: String(format: "%.1f min", stats.totalDurationMinutes),
-                    icon: "clock.fill",
-                    color: .purple
-                )
-                
-                StatItem(
-                    title: "Avg Duration",
-                    value: String(format: "%.1f min", stats.averageDurationMinutes),
-                    icon: "timer",
-                    color: .red
-                )
-            }
-        }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
-    }
-}
-
-@available(iOS 16.0, *)
-struct StatItem: View {
-    let title: String
-    let value: String
-    let icon: String
-    let color: Color
-    
-    var body: some View {
-        VStack(spacing: 4) {
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundColor(color)
-            
-            Text(value)
-                .font(.headline)
-                .fontWeight(.semibold)
-            
-            Text(title)
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-    }
-}
-
-@available(iOS 16.0, *)
-struct SessionRowView: View {
-    let session: WaterEjectionSession
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 12) {
-                Image(systemName: session.deviceType.icon)
-                    .foregroundColor(.blue)
-                    .frame(width: 24, height: 24)
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(session.deviceType.displayName)
-                        .font(.headline)
-                        .fontWeight(.medium)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.9)
-                }
-                
-                Spacer()
-                
-                StatusBadge(isCompleted: session.isCompleted)
-            }
-            
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Intensity: \(session.intensityLevel.displayName)")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.9)
-                    
-                    Text("Duration: \(formatDuration(session.duration))")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.9)
-                }
-                
-                Spacer()
-                
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text(formatDate(session.startTime))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.9)
-                    
-                    if let endTime = session.endTime {
-                        Text(formatTime(session.startTime, endTime))
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.9)
-                    }
-                }
-            }
-        }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
-        .frame(maxWidth: .infinity)
-    }
-    
-    private func formatDuration(_ duration: TimeInterval) -> String {
-        let minutes = Int(duration) / 60
-        let seconds = Int(duration) % 60
-        return String(format: "%d:%02d", minutes, seconds)
-    }
-    
-    private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        return formatter.string(from: date)
-    }
-    
-    private func formatTime(_ start: Date, _ end: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.timeStyle = .short
-        return "\(formatter.string(from: start)) - \(formatter.string(from: end))"
-    }
-}
-
-@available(iOS 16.0, *)
-struct StatusBadge: View {
-    let isCompleted: Bool
-    
-    var body: some View {
-        Text(isCompleted ? "Completed" : "Incomplete")
-            .font(.caption)
-            .fontWeight(.medium)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(isCompleted ? Color.green.opacity(0.2) : Color.orange.opacity(0.2))
-            .foregroundColor(isCompleted ? .green : .orange)
-            .cornerRadius(8)
-    }
-}
-
-@available(iOS 16.0, *)
-struct StatisticsView: View {
-    let stats: SessionStats
-    @Environment(\.dismiss) private var dismiss
-    
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Overview Stats
-                    VStack(spacing: 16) {
-                        Text("Overview")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                        
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 16) {
-                            HistoryStatCard(
-                                title: "Total Sessions",
-                                value: "\(stats.totalSessions)",
-                                icon: "number.circle.fill",
-                                color: .blue
-                            )
-                            
-                            HistoryStatCard(
-                                title: "Completion Rate",
-                                value: "\(Int(stats.completionRate * 100))%",
-                                icon: "percent",
-                                color: .green
-                            )
-                            
-                            HistoryStatCard(
-                                title: "Total Time",
-                                value: String(format: "%.1f hours", stats.totalDurationMinutes / 60),
-                                icon: "clock.fill",
-                                color: .purple
-                            )
-                            
-                            HistoryStatCard(
-                                title: "Avg Duration",
-                                value: String(format: "%.1f min", stats.averageDurationMinutes),
-                                icon: "timer",
-                                color: .orange
-                            )
+                                Text(session.startTime, format: .dateTime.month().day().year().hour().minute()).font(.subheadline).foregroundStyle(.secondary)
+                                Text("\(session.intensityLevel.displayName) · \(Duration.seconds(session.duration).formatted(.time(pattern: .minuteSecond)))")
+                                    .font(.subheadline).foregroundStyle(.secondary)
+                            }.padding(.vertical, 6)
+                                .swipeActions { Button("Delete", role: .destructive) { pendingDelete = session } }
                         }
                     }
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(16)
-                    
-                    // Device Breakdown
-                    if !stats.deviceStats.isEmpty {
-                        VStack(spacing: 16) {
-                            Text("Device Usage")
-                                .font(.title2)
-                                .fontWeight(.bold)
-                            
-                            ForEach(Array(stats.deviceStats.keys.sorted(by: { stats.deviceStats[$0]! > stats.deviceStats[$1]! })), id: \.self) { device in
-                                DeviceStatRow(
-                                    device: device,
-                                    count: stats.deviceStats[device] ?? 0,
-                                    total: stats.totalSessions
-                                )
-                            }
-                        }
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(16)
-                    }
-                    
-                    // Intensity Breakdown
-                    if !stats.intensityStats.isEmpty {
-                        VStack(spacing: 16) {
-                            Text("Intensity Usage")
-                                .font(.title2)
-                                .fontWeight(.bold)
-                            
-                            ForEach(Array(stats.intensityStats.keys.sorted(by: { stats.intensityStats[$0]! > stats.intensityStats[$1]! })), id: \.self) { intensity in
-                                IntensityStatRow(
-                                    intensity: intensity,
-                                    count: stats.intensityStats[intensity] ?? 0,
-                                    total: stats.totalSessions
-                                )
-                            }
-                        }
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(16)
+                }
+                Section {
+                    Text("Completion describes the session timer. It does not measure speaker health or dryness.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                }
+                Section { ConditionalBannerAdView(adUnitId: AdMobService.shared.getBannerAdUnitId()) }
+            }.navigationTitle("Activity")
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        NavigationLink { AnalyticsDashboardView() } label: { Label("Usage summary", systemImage: "chart.bar") }
                     }
                 }
-                .padding()
-            }
-            .navigationTitle("Statistics")
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarItems(trailing: Button("Done") {
-                dismiss()
-            })
+                .confirmationDialog("Delete this session?", isPresented: Binding(get: { pendingDelete != nil }, set: { if !$0 { pendingDelete = nil } }), titleVisibility: .visible) {
+                    Button("Delete session", role: .destructive) {
+                        if let session = pendingDelete { data.deleteWaterEjectionSession(session) }; pendingDelete = nil
+                    }
+                }
         }
     }
-}
-
-@available(iOS 16.0, *)
-struct HistoryStatCard: View {
-    let title: String
-    let value: String
-    let icon: String
-    let color: Color
-    
-    var body: some View {
-        VStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.title)
-                .foregroundColor(color)
-            
-            Text(value)
-                .font(.title2)
-                .fontWeight(.bold)
-            
-            Text(title)
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-        }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
+    private func sessionTitle(_ session: WaterEjectionSession) -> some View {
+        Label(session.deviceType.displayName, systemImage: session.deviceType.icon).font(.headline)
     }
-}
-
-@available(iOS 16.0, *)
-struct DeviceStatRow: View {
-    let device: DeviceType
-    let count: Int
-    let total: Int
-    
-    var percentage: Double {
-        guard total > 0 else { return 0 }
-        return Double(count) / Double(total)
-    }
-    
-    var body: some View {
-        HStack {
-            Image(systemName: device.icon)
-                .foregroundColor(.blue)
-                .frame(width: 20)
-            
-            Text(device.displayName)
-                .font(.body)
-            
-            Spacer()
-            
-            Text("\(count) (\(Int(percentage * 100))%)")
-                .font(.body)
-                .foregroundColor(.secondary)
-        }
-    }
-}
-
-@available(iOS 16.0, *)
-struct IntensityStatRow: View {
-    let intensity: IntensityLevel
-    let count: Int
-    let total: Int
-    
-    var percentage: Double {
-        guard total > 0 else { return 0 }
-        return Double(count) / Double(total)
-    }
-    
-    var body: some View {
-        HStack {
-            Image(systemName: intensity.icon)
-                .foregroundColor(intensity.color)
-                .frame(width: 20)
-            
-            Text(intensity.displayName)
-                .font(.body)
-            
-            Spacer()
-            
-            Text("\(count) (\(Int(percentage * 100))%)")
-                .font(.body)
-                .foregroundColor(.secondary)
-        }
+    private func status(_ session: WaterEjectionSession) -> some View {
+        Text(session.isCompleted ? "Completed" : "Stopped").font(.caption.bold())
+            .padding(.horizontal, 10).padding(.vertical, 5)
+            .background((session.isCompleted ? Color.green : Color.orange).opacity(0.12), in: Capsule())
     }
 }
 
 enum HistoryFilter: CaseIterable {
     case all, completed, incomplete, today, week, month
-    
     var displayName: String {
         switch self {
-        case .all: return "All"
+        case .all: return "All sessions"
         case .completed: return "Completed"
-        case .incomplete: return "Incomplete"
+        case .incomplete: return "Stopped"
         case .today: return "Today"
-        case .week: return "Week"
-        case .month: return "Month"
+        case .week: return "Last 7 days"
+        case .month: return "Last 30 days"
         }
     }
-}
-
-#Preview {
-    if #available(iOS 16.0, *) {
-        HistoryView()
-    } else {
-        Text("Requires iOS 16.0 or newer")
+    func apply(to sessions: [WaterEjectionSession], now: Date = Date(), calendar: Calendar = .current) -> [WaterEjectionSession] {
+        sessions.filter { session in
+            switch self {
+            case .all: return true
+            case .completed: return session.isCompleted
+            case .incomplete: return !session.isCompleted
+            case .today: return calendar.isDate(session.startTime, inSameDayAs: now)
+            case .week, .month:
+                let start = calendar.date(byAdding: .day, value: self == .week ? -7 : -30, to: now) ?? now
+                return session.startTime >= start && session.startTime <= now
+            }
+        }.sorted { $0.startTime > $1.startTime }
     }
-} 
+}

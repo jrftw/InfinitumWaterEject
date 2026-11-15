@@ -2,9 +2,14 @@ import SwiftUI
 
 @available(iOS 16.0, *)
 struct TipsView: View {
+    var isPresentedAsSheet = true
     @Environment(\.dismiss) private var dismiss
     var body: some View {
-        NavigationStack {
+        Group {
+            if isPresentedAsSheet { NavigationStack { content } } else { content }
+        }
+    }
+    private var content: some View {
             List {
                 Section("Before playing audio") {
                     Text("Remove the case and gently wipe visible moisture with a soft, dry cloth. Disconnect charging cables and headphones.")
@@ -21,7 +26,6 @@ struct TipsView: View {
                     Link("Apple’s liquid-detection guidance", destination: URL(string: "https://support.apple.com/102643")!)
                 }
             }.navigationTitle("Safety Tips").navigationBarTitleDisplayMode(.inline)
-                .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
-        }
+                .toolbar { if isPresentedAsSheet { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } } }
     }
 }

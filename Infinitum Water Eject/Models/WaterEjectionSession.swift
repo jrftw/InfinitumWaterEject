@@ -108,7 +108,7 @@ extension WaterEjectionSession {
         self.intensityLevel = IntensityLevel(rawValue: entity.intensity ?? "Medium") ?? .medium
         self.duration = entity.duration
         self.startTime = entity.timestamp ?? Date()
-        self.endTime = nil // Core Data model doesn't store endTime separately
+        self.endTime = self.startTime.addingTimeInterval(max(0, self.duration)) // Recorded duration gives the end of a saved session.
         self.isCompleted = entity.isCompleted
     }
     
@@ -219,7 +219,13 @@ enum IntensityLevel: String, CaseIterable, Codable {
     /// Human-readable display name for the intensity level
     /// Used in UI labels and user-facing text
     var displayName: String {
-        return rawValue
+        switch self {
+        case .low: return "Short"
+        case .medium: return "Standard"
+        case .high: return "Long"
+        case .emergency: return "Extended"
+        case .realtime: return "Live tuning"
+        }
     }
     
     /// SF Symbol icon name for the intensity level

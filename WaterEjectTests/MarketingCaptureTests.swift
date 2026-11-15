@@ -31,4 +31,39 @@ final class MarketingCaptureTests: XCTestCase {
         attachment.lifetime = .keepAlways
         add(attachment)
     }
+    func testCapturePolishedNavigationAndAccessibility() async throws {
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let theme = ThemeService()
+        let screens: [(String, AnyView)] = [
+            ("home-light", AnyView(MainTabView().environmentObject(theme))),
+            ("history-light", AnyView(MainTabView().environmentObject(theme))),
+            ("home-accessibility", AnyView(MainTabView().environmentObject(theme).dynamicTypeSize(.accessibility3))),
+            ("cycle-settings", AnyView(IntensityPickerView(selectedIntensity: .constant(.medium)))),
+            ("help-light", AnyView(NavigationStack { SupportHelpView() })),
+            ("tools-light", AnyView(MainTabView().environmentObject(theme))),
+            ("settings-light", AnyView(MainTabView().environmentObject(theme))),
+            ("changelog-dark", AnyView(NavigationStack { ChangeLogView() }.preferredColorScheme(.dark))),
+            ("settings-accessibility", AnyView(MainTabView().environmentObject(theme).dynamicTypeSize(.accessibility3))),
+            ("tools-accessibility", AnyView(MainTabView().environmentObject(theme).dynamicTypeSize(.accessibility3)))
+        ]
+        for (name, screen) in screens {
+            AppNavigation.shared.selectedTab = name.hasPrefix("tools") ? 1 : name.hasPrefix("settings") ? 4 : name.hasPrefix("history") ? 2 : 0
+            let window = UIWindow(windowScene: scene)
+            window.rootViewController = UIHostingController(rootView: screen)
+            window.overrideUserInterfaceStyle = name.contains("dark") ? .dark : .light
+            window.makeKeyAndVisible()
+            try await Task.sleep(nanoseconds: 100_000_000)
+            AppNavigation.shared.selectedTab = name.hasPrefix("tools") ? 1 : name.hasPrefix("settings") ? 4 : name.hasPrefix("history") ? 2 : 0
+            try await Task.sleep(nanoseconds: 600_000_000)
+            let image = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in
+                window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+            }
+            let output = FileManager.default.temporaryDirectory.appendingPathComponent("polish-" + name + ".png")
+            try XCTUnwrap(image.pngData()).write(to: output)
+            print("POLISH_CAPTURE", output.path)
+            let attachment = XCTAttachment(image: image); attachment.name = name; attachment.lifetime = .keepAlways; add(attachment)
+            window.isHidden = true
+        }
+    }
+
 }

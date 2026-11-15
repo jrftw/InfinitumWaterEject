@@ -39,13 +39,13 @@ final class WaterEjectionService: NSObject, ObservableObject {
         currentDevice = device
         let defaults = UserDefaults.standard
         let custom = useSavedSettings && defaults.bool(forKey: "useCustomIntensity") && intensity != .realtime
-        let customValue = defaults.double(forKey: "customIntensityValue")
+        let customValue = defaults.object(forKey: "customIntensityValue") as? Double ?? 50
         let savedDuration = defaults.double(forKey: "customDuration")
         let duration = custom && savedDuration.isFinite && savedDuration > 0 ? min(300, max(5, savedDuration)) : intensity.duration
         isRealtimeMode = intensity == .realtime
         let frequency: Double
         if isRealtimeMode { frequency = realtimeFrequency(realtimeIntensity) }
-        else if custom && customValue.isFinite && customValue > 0 { frequency = baseFrequency * (0.5 + min(100, customValue) / 100 * 1.5) }
+        else if custom && customValue.isFinite && customValue >= 0 { frequency = baseFrequency * (0.5 + min(100, customValue) / 100 * 1.5) }
         else {
             let multipliers: [IntensityLevel: Double] = [.low: 0.8, .medium: 1, .high: 1.2, .emergency: 1.5]
             frequency = baseFrequency * (multipliers[intensity] ?? 1)

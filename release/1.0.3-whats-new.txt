@@ -1,0 +1,8 @@
+A simpler Water Eject experience:
+• Find Eject, Tools, Activity and Settings in four clear tabs.
+• Browse release notes for every version in Settings → What’s New.
+• Enjoy clearer cycle settings, session details and help.
+• Keep your selected seasonal theme between visits.
+• Manage optional reminders with editable times and clearer permission feedback.
+• Share session history as a CSV, or delete it with confirmation.
+• Includes fixes for saved custom tones, invalid preset values and iPad navigation.

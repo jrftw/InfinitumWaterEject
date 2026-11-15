@@ -132,7 +132,8 @@ struct RealtimeAdjustmentView: View {
                         .multilineTextAlignment(.leading)
                         .lineLimit(2)
                 }
-                .padding()
+                .onAppear { intensity = waterEjectionService.realtimeIntensity }
+        .padding()
                 .background(Color.blue.opacity(0.1))
                 .cornerRadius(8)
             }

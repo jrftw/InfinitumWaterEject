@@ -25,7 +25,7 @@ struct AchievementsView: View {
     @State private var showingStats = false
     
     var body: some View {
-        NavigationStack {
+        Group {
             ScrollView {
                 VStack(spacing: 20) {
                     // Achievement Stats Card

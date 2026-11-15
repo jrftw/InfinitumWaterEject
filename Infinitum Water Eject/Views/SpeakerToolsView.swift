@@ -4,6 +4,9 @@ struct TonePreset: Codable, Identifiable {
     var id = UUID()
     var name: String
     var frequency: Double
+    static func boundedFrequency(_ value: Double) -> Double {
+        value.isFinite ? min(2000, max(50, value)) : 165
+    }
 }
 
 @available(iOS 16.0, *)
@@ -15,28 +18,28 @@ struct SpeakerToolsView: View {
     @AppStorage("tonePresets") private var presetData = Data()
     @State private var name = ""
     @State private var showPremium = false
+    private var safeFrequency: Double { TonePreset.boundedFrequency(frequency) }
     private var presets: [TonePreset] { (try? JSONDecoder().decode([TonePreset].self, from: presetData)) ?? [] }
     var body: some View {
         NavigationStack {
             Form {
                 Section {
                     Text("Listen, compare and find your preferred tone.").font(.headline)
-                    Text("Use this device’s built-in speaker. Start at a low system volume and keep the device away from your ears. A tone test cannot diagnose damage or confirm that water is gone.")
+                    Text("Use the built-in speaker at low system volume, away from your ears. A tone cannot diagnose damage or confirm dryness.")
                         .font(.subheadline).foregroundStyle(.secondary)
                 }
                 Section("Speaker test") {
-                    Text("\(Int(frequency)) Hz").font(.title.monospacedDigit()).accessibilityLabel("Frequency, \(Int(frequency)) hertz")
-                    Slider(value: $frequency, in: 50...2000, step: 1).accessibilityLabel("Test frequency")
+                    Text("\(Int(safeFrequency)) Hz").font(.title.monospacedDigit()).accessibilityLabel("Frequency, \(Int(safeFrequency)) hertz")
+                    Slider(value: Binding(get: { safeFrequency }, set: { frequency = $0 }), in: 50...2000, step: 1).accessibilityLabel("Test frequency")
                         .disabled(audio.isPlaying)
-                    HStack {
-                        ForEach([165.0, 440, 1000], id: \.self) { hz in
-                            Button("\(Int(hz)) Hz") { frequency = hz }.buttonStyle(.bordered).disabled(audio.isPlaying)
-                        }
+                    ViewThatFits(in: .horizontal) {
+                        HStack { toneButtons }
+                        VStack(alignment: .leading) { toneButtons }
                     }
                     if audio.isPlaying {
                         Button("Stop audio", role: .destructive) { audio.stopEjection() }
                     } else {
-                        Button { audio.startSpeakerTest(frequency: frequency) } label: {
+                        Button { audio.startSpeakerTest(frequency: safeFrequency) } label: {
                             Label("Play 10-second test", systemImage: "play.fill")
                         }
                     }
@@ -47,7 +50,7 @@ struct SpeakerToolsView: View {
                         Button("Save current frequency") {
                             guard purchases.isPremium || ads.toolsUnlocked else { return }
                             var updated = presets
-                            updated.append(TonePreset(name: String(name.trimmingCharacters(in: .whitespacesAndNewlines).prefix(40)), frequency: frequency))
+                            updated.append(TonePreset(name: String(name.trimmingCharacters(in: .whitespacesAndNewlines).prefix(40)), frequency: safeFrequency))
                             presetData = (try? JSONEncoder().encode(updated)) ?? presetData
                             name = ""; GrowthMetrics.shared.record("preset_saved")
                         }.disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || presets.count >= 20)
@@ -62,8 +65,8 @@ struct SpeakerToolsView: View {
                         }
                     }
                     ForEach(presets) { preset in
-                        Button { frequency = min(2000, max(50, preset.frequency)) } label: {
-                            HStack { Text(preset.name); Spacer(); Text("\(Int(preset.frequency)) Hz").foregroundStyle(.secondary) }
+                        Button { frequency = TonePreset.boundedFrequency(preset.frequency) } label: {
+                            HStack { Text(preset.name); Spacer(); Text("\(Int(TonePreset.boundedFrequency(preset.frequency))) Hz").foregroundStyle(.secondary) }
                         }.disabled(audio.isPlaying)
                     }.onDelete { offsets in
                         var updated = presets; updated.remove(atOffsets: offsets)
@@ -77,12 +80,18 @@ struct SpeakerToolsView: View {
                 Section { ConditionalBannerAdView(adUnitId: ads.getBannerAdUnitId()) }
             }.navigationTitle("Speaker Tools")
                 .sheet(isPresented: $showPremium) { PremiumOfferView() }
-                .alert("Audio", isPresented: Binding(get: { audio.errorMessage != nil }, set: { if !$0 { audio.errorMessage = nil } })) {
-                    Button("OK") { audio.errorMessage = nil }
-                } message: { Text(audio.errorMessage ?? "") }
-                .alert("Video", isPresented: Binding(get: { ads.message != nil }, set: { if !$0 { ads.message = nil } })) {
-                    Button("OK") { ads.message = nil }
-                } message: { Text(ads.message ?? "") }
+                .alert(audio.errorMessage == nil ? "Video" : "Audio", isPresented: Binding(
+                    get: { audio.errorMessage != nil || ads.message != nil },
+                    set: { if !$0 { audio.errorMessage = nil; ads.message = nil } })) {
+                    Button("OK") { audio.errorMessage = nil; ads.message = nil }
+                } message: { Text(audio.errorMessage ?? ads.message ?? "") }
         }
     }
+    private var toneButtons: some View {
+        ForEach([165.0, 440, 1000], id: \.self) { hz in
+            Button("\(Int(hz)) Hz") { frequency = hz }
+                .buttonStyle(.bordered).disabled(audio.isPlaying)
+        }
+    }
+
 }
