@@ -14,6 +14,7 @@ final class AdMobService: NSObject, ObservableObject, FullScreenContentDelegate 
     @Published private(set) var consentRevision = 0
     @Published var message: String?
     private var consentRequested = false
+    private var consentFlowCompleted = false
     private var starting = false
     private var interstitial: InterstitialAd?
     private var rewarded: RewardedAd?
@@ -40,7 +41,7 @@ final class AdMobService: NSObject, ObservableObject, FullScreenContentDelegate 
             }.store(in: &subscriptions)
     }
     var canRequestAds: Bool {
-        SubscriptionService.shared.entitlementChecked && !SubscriptionService.shared.isPremium &&
+        consentFlowCompleted && SubscriptionService.shared.entitlementChecked && !SubscriptionService.shared.isPremium &&
         ConsentInformation.shared.canRequestAds && UIApplication.shared.applicationState == .active
     }
     var toolsUnlocked: Bool { toolsUnlockedUntil.map { $0 > Date() } ?? false }
@@ -71,9 +72,11 @@ final class AdMobService: NSObject, ObservableObject, FullScreenContentDelegate 
                     catch { GrowthMetrics.shared.record("consent_form_failed") }
                     self.privacyOptionsRequired = ConsentInformation.shared.privacyOptionsRequirementStatus == .required
                     self.consentRevision += 1
+                    self.consentFlowCompleted = true
                     self.startIfPermitted()
                 } else {
                     GrowthMetrics.shared.record("consent_update_failed")
+                    self.consentFlowCompleted = true
                     self.startIfPermitted()
                 }
             }
@@ -163,8 +166,7 @@ final class AdMobService: NSObject, ObservableObject, FullScreenContentDelegate 
         }
         guard canRequestAds, !isPresenting, !WaterEjectionService.shared.isPlaying,
               AppNavigation.shared.selectedTab == 0,
-              Date().timeIntervalSince(launchedAt) >= 60,
-              GrowthMetrics.shared.cohort == "post_session",
+              Date().timeIntervalSince(launchedAt) >= 25,
               AdPlacementPolicy.allows(completed: count, shownToday: defaults.integer(forKey: "adsShownToday"),
                   lastShown: defaults.object(forKey: "lastFullScreenAd") as? Date, now: Date()),
               let controller = Self.presenter, controller.presentedViewController == nil,
@@ -218,9 +220,10 @@ final class AdMobService: NSObject, ObservableObject, FullScreenContentDelegate 
 /// Each placement owns its view. Never attach one cached UIKit banner to multiple screens.
 struct BannerAdView: UIViewRepresentable {
     let adUnitId: String
+    let adSize: AdSize
     func makeCoordinator() -> Coordinator { Coordinator() }
     func makeUIView(context: Context) -> BannerView {
-        let banner = BannerView(adSize: AdSizeBanner)
+        let banner = BannerView(adSize: adSize)
         banner.adUnitID = adUnitId
         banner.rootViewController = AdMobService.presenter
         banner.delegate = context.coordinator
@@ -260,19 +263,34 @@ struct BannerAdView: UIViewRepresentable {
     }
 }
 
+private struct BannerWidthKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
+}
+
 struct ConditionalBannerAdView: View {
     let adUnitId: String
     @ObservedObject private var ads = AdMobService.shared
     @ObservedObject private var purchases = SubscriptionService.shared
     @ObservedObject private var audio = WaterEjectionService.shared
     @Environment(\.scenePhase) private var phase
+    @State private var width: CGFloat = 0
     var body: some View {
         if !purchases.isPremium, purchases.entitlementChecked, ads.isAdMobInitialized,
            !audio.isPlaying, phase == .active, !ads.getBannerAdUnitId().isEmpty {
             VStack(spacing: 4) {
                 Text("Advertisement").font(.caption2).foregroundStyle(.secondary)
-                BannerAdView(adUnitId: ads.getBannerAdUnitId()).frame(width: 320, height: 50)
+                if width >= 250 {
+                    let size = currentOrientationAnchoredAdaptiveBanner(width: width)
+                    BannerAdView(adUnitId: ads.getBannerAdUnitId(), adSize: size)
+                        .id(width)
+                        .frame(width: width, height: size.size.height)
+                } else { Color.clear.frame(height: 50) }
             }.frame(maxWidth: .infinity).padding(.vertical, 8)
+                .background(GeometryReader { proxy in
+                    Color.clear.preference(key: BannerWidthKey.self, value: min(728, floor(proxy.size.width)))
+                })
+                .onPreferenceChange(BannerWidthKey.self) { if abs(width - $0) >= 1 { width = $0 } }
         }
     }
 }

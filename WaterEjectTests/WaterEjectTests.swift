@@ -3,13 +3,11 @@ import AppIntents
 @testable import Infinitum_Water_Eject
 
 final class PlacementPolicyTests: XCTestCase {
-    func testFirstSessionAndOddSessionsNeverShowFullScreen() {
-        for count in [0, 1, 3, 5, 7] {
-            XCTAssertFalse(AdPlacementPolicy.allows(completed: count, shownToday: 0, lastShown: nil, now: Date()))
-        }
+    func testNoCompletedCycleNeverShowsFullScreen() {
+        XCTAssertFalse(AdPlacementPolicy.allows(completed: 0, shownToday: 0, lastShown: nil, now: Date()))
     }
-    func testEverySecondSessionIsEligible() {
-        for count in [2, 4, 6] {
+    func testFirstAndLaterCompletedCyclesAreEligible() {
+        for count in [1, 2, 3, 4, 6] {
             XCTAssertTrue(AdPlacementPolicy.allows(completed: count, shownToday: 0, lastShown: nil, now: Date()))
         }
     }

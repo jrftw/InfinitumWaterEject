@@ -39,11 +39,13 @@ Production ad units are in the app's Info.plist:
 - Completed-cycle interstitial: `ca-app-pub-6815311336585204/9270556090`
 - Optional rewarded preset saving: `ca-app-pub-6815311336585204/7957474425`
 
-Interstitial eligibility: every second completed eject cycle lasting at least 25 seconds, after the first minute in the app, at least 3 minutes apart, at most 3 per local day. A persisted 20% installation holdout receives banners only. The AdMob unit also caps interstitial impressions to 3 per 24 hours. Rewarded ads are shown only after explicit opt-in and grant access only through the SDK reward callback.
+Interstitial eligibility: after any completed eject cycle lasting at least 25 seconds, once at least 25 seconds have elapsed in the app, at least 3 minutes apart, at most 3 per local day. Every free installation is eligible; no banner-only holdout is applied. Banners adapt to the available layout width. The AdMob unit also caps interstitial impressions to 3 per 24 hours. Rewarded ads are shown only after explicit opt-in and grant access only through the SDK reward callback.
 
 `release/store-localizations.json` backs up the 10 store descriptions/promotional texts/keywords/release notes prepared for the next version. `release/website-content.html` is a draft replacement article for the existing website URL, with SEO title, description, canonical and SoftwareApplication data. It is not a deployed website.
 
-Before submission, verify live UMP messages and the app's actual SDK data disclosures in App Store Connect, upload fresh screenshots, attach the lifetime purchase and its review screenshot to the app version, and validate ads/purchases/widgets/Siri on a signed physical device. The public website's old ad-free claims must be replaced alongside release. Store-side drafts and code do not themselves publish the update.
+Water Eject-specific European and US privacy messages are published in AdMob, and the existing published IDFA explainer now includes this app. UMP completes the consent flow before any ad request. Info.plist includes the ATT explanation and 50 SKAdNetwork identifiers from Google’s official integration guide. App Store privacy labels declare the pinned Google SDK data categories, linkage, purposes, and optional device-ID tracking. The lifetime purchase and actual paywall screenshot have been added to the draft review submission. Fresh iPhone and iPad screenshots are uploaded.
+
+Fourteen regression/StoreKit/capture tests pass, and the signed 1.0.2 (1) archive and App Store distribution export succeed. A signed physical-device acceptance pass remains unverified. The public website's old ad-free claims must be replaced alongside release. Store-side drafts and code do not themselves publish the update.
 
 For population revenue, conversion and retention, use AdMob and App Store Connect reporting. Local diagnostic exports are scoped to one installation and must not be presented as aggregate business metrics. A centralized analytics backend is not configured in this branch.
 

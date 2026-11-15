@@ -9,12 +9,7 @@ final class GrowthMetrics: ObservableObject {
         get { defaults.object(forKey: "diagnosticsEnabled") as? Bool ?? true }
         set { defaults.set(newValue, forKey: "diagnosticsEnabled"); revision += 1 }
     }
-    var cohort: String {
-        if let value = defaults.string(forKey: "monetizationCohort") { return value }
-        let value = Int.random(in: 0..<5) == 0 ? "banner_only" : "post_session"
-        defaults.set(value, forKey: "monetizationCohort")
-        return value
-    }
+    var cohort: String { "post_session" }
     func record(_ event: String) {
         guard enabled else { return }
         var counts = defaults.dictionary(forKey: "growthCounts") as? [String: Int] ?? [:]
@@ -60,7 +55,7 @@ final class GrowthMetrics: ObservableObject {
 /// Pure rules shared by the placement code and executable regression checks.
 struct AdPlacementPolicy {
     static func allows(completed: Int, shownToday: Int, lastShown: Date?, now: Date) -> Bool {
-        guard completed >= 2, completed % 2 == 0, shownToday < 3 else { return false }
+        guard completed >= 1, shownToday < 3 else { return false }
         return lastShown.map { now.timeIntervalSince($0) >= 180 } ?? true
     }
 }
