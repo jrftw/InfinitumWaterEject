@@ -763,7 +763,7 @@ struct DeviceStatisticsView: View {
                 
                 ForEach(Array(DeviceType.allCases), id: \.self) { device in
                     if let successRate = stats.deviceSuccessRates[device] {
-                        StatRow(title: "\(device.displayName) Success Rate", value: "\(Int(successRate * 100))%")
+                        StatRow(title: "\(device.displayName) Completion Rate", value: "\(Int(successRate * 100))%")
                     }
                 }
             }
@@ -795,7 +795,7 @@ struct IntensityStatisticsView: View {
                 
                 ForEach(IntensityLevel.allCases, id: \.self) { intensity in
                     if let successRate = stats.intensitySuccessRates[intensity] {
-                        StatRow(title: "\(intensity.displayName) Success Rate", value: "\(Int(successRate * 100))%")
+                        StatRow(title: "\(intensity.displayName) Completion Rate", value: "\(Int(successRate * 100))%")
                     }
                 }
             }

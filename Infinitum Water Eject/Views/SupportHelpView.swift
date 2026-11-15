@@ -179,12 +179,12 @@ struct FAQSection: View {
         FAQItemSupport(
             id: "how-it-works",
             question: "How does water and dust ejection work?",
-            answer: "Infinitum Water Eject generates specific sound frequencies that help dislodge water droplets and dust particles from your device's speakers and internal components. The app uses scientifically-tuned frequencies optimized for different water and dust exposure levels. The frequencies are carefully calibrated to be effective yet safe."
+            answer: "The app plays tones through this device’s speaker. Sound may help move droplets near the speaker; it cannot remove internal moisture, clean ports, or confirm that a device is dry."
         ),
         FAQItemSupport(
             id: "devices-supported",
             question: "What devices are supported?",
-            answer: "The app supports iPhone, iPad, MacBook, Apple Watch, AirPods, and other electronic devices. Each device type has optimized frequencies and specific safety tips tailored to their unique characteristics."
+            answer: "This release supports iPhone and iPad with iOS 16 or later. Audio plays through the device running the app, not a nearby Watch or AirPods."
         ),
         FAQItemSupport(
             id: "duration",
@@ -194,7 +194,7 @@ struct FAQSection: View {
         FAQItemSupport(
             id: "safety",
             question: "Is this app safe for my device?",
-            answer: "Yes, the app uses safe audio frequencies that won't damage your device. However, always follow the safety guidelines and consult a professional if water damage is severe. The frequencies are carefully calibrated to be effective yet safe."
+            answer: "Start at a low system volume, disconnect headphones, and keep the speaker away from your ears. Stop if uncomfortable. Follow your manufacturer’s guidance for wet or damaged devices."
         ),
         FAQItemSupport(
             id: "intensity-levels",
@@ -214,7 +214,7 @@ struct FAQSection: View {
         FAQItemSupport(
             id: "data-privacy",
             question: "Is my data private?",
-            answer: "Yes, all your data is stored locally on your device using Core Data. We do not transmit your data to external servers unless you explicitly choose to share session statistics or contact support. Your privacy is our priority."
+            answer: "Session history, presets and optional diagnostics stay on your device unless you share them. The free version uses Google AdMob, which handles advertising data under its own policies and your applicable privacy choices. Apple handles purchases."
         )
     ]
     

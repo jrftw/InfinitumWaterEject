@@ -28,6 +28,15 @@ struct HistoryView: View {
         }
     }
     
+    private var filteredStats: SessionStats {
+        let sessions = filteredSessions
+        let duration = sessions.reduce(0) { $0 + $1.duration }
+        return SessionStats(totalSessions: sessions.count, completedSessions: sessions.filter(\.isCompleted).count,
+            totalDuration: duration, averageDuration: sessions.isEmpty ? 0 : duration / Double(sessions.count),
+            deviceStats: Dictionary(grouping: sessions, by: \.deviceType).mapValues(\.count),
+            intensityStats: Dictionary(grouping: sessions, by: \.intensityLevel).mapValues(\.count))
+    }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -37,7 +46,8 @@ struct HistoryView: View {
                         Text(filter.displayName).tag(filter)
                     }
                 }
-                .pickerStyle(SegmentedPickerStyle())
+                .pickerStyle(.menu)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal)
                 .padding(.vertical, 8)
                 
@@ -47,7 +57,7 @@ struct HistoryView: View {
                     ScrollView {
                         VStack(spacing: 16) {
                             // Statistics Card
-                            StatsCard(stats: waterEjectionService.getSessionStats(), filter: selectedFilter)
+                            StatsCard(stats: filteredStats, filter: selectedFilter)
                                 .padding(.horizontal)
                             
                             // Sessions List
@@ -174,7 +184,7 @@ struct StatsCard: View {
                 )
                 
                 StatItem(
-                    title: "Success Rate",
+                    title: "Completion Rate",
                     value: "\(Int(stats.completionRate * 100))%",
                     icon: "percent",
                     color: .orange
@@ -351,7 +361,7 @@ struct StatisticsView: View {
                             )
                             
                             HistoryStatCard(
-                                title: "Success Rate",
+                                title: "Completion Rate",
                                 value: "\(Int(stats.completionRate * 100))%",
                                 icon: "percent",
                                 color: .green

@@ -128,13 +128,13 @@ class NotificationService: ObservableObject {
         
         // MARK: - Existing Notification Cleanup
         // Remove all existing pending notifications to prevent duplicates
-        center.removeAllPendingNotificationRequests()
+        center.removePendingNotificationRequests(withIdentifiers: ["dailyReminder"])
         
         // MARK: - Notification Content Configuration
         // Configure notification content with title, body, and sound
         let content = UNMutableNotificationContent()
         content.title = "Water & Dust Ejection Reminder"
-        content.body = "Time to check your devices for water and dust damage prevention!"
+        content.body = "Your optional reminder: open speaker tools if you need them."
         content.sound = .default
         content.badge = 1
         
@@ -194,7 +194,7 @@ class NotificationService: ObservableObject {
             "Remember: Let your device dry completely before using it again",
             "Pro tip: Use silica gel packets to speed up the drying process",
             "Safety first: Never use heat sources like hair dryers on electronics",
-            "Regular maintenance: Run water and dust ejection sessions weekly for best results",
+            "Only run a tone when you need it; daily cleaning cycles are not required",
             "Device care: Keep your device away from dusty environments when possible",
             "Prevention: Consider using protective cases in wet or dusty conditions"
         ]

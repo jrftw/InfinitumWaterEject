@@ -1,0 +1,63 @@
+{
+  "identifier": "WaterEjectLocalTests",
+  "nonRenewingSubscriptions": [],
+  "products": [
+    {
+      "displayPrice": "7.99",
+      "familyShareable": false,
+      "internalID": "lifetime-test",
+      "localizations": [
+        {
+          "description": "Remove ads and save custom presets",
+          "displayName": "Lifetime Premium",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "com.infinitumimagery.watereject.premium.lifetime",
+      "referenceName": "Lifetime Premium",
+      "type": "NonConsumable"
+    }
+  ],
+  "settings": {
+    "_applicationInternalID": "6748260343",
+    "_developerTeamID": "",
+    "_failTransactionsEnabled": false,
+    "_locale": "en_US",
+    "_storefront": "USA",
+    "_storeKitErrors": []
+  },
+  "subscriptionGroups": [
+    {
+      "id": "legacy-premium",
+      "localizations": [],
+      "name": "Legacy Premium",
+      "subscriptions": [
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "4.99",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "monthly-test",
+          "introductoryOffer": null,
+          "localizations": [
+            {
+              "description": "Legacy premium subscription",
+              "displayName": "Monthly Premium",
+              "locale": "en_US"
+            }
+          ],
+          "productID": "com.infinitumimagery.watereject.premium.monthly",
+          "recurringSubscriptionPeriod": "P1M",
+          "referenceName": "Monthly Premium",
+          "subscriptionGroupID": "legacy-premium",
+          "type": "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version": {
+    "major": 3,
+    "minor": 0
+  }
+}

@@ -17,7 +17,7 @@ struct PremiumBannerView: View {
                         .fontWeight(.semibold)
                         .foregroundColor(.primary)
                     
-                    Text("Remove ads & unlock Apple Watch widgets")
+                    Text("Remove ads & save custom speaker presets")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }

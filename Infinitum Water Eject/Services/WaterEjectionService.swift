@@ -1,502 +1,177 @@
-/*
- * ============================================================================
- * INFINITUM WATER EJECT - WATER EJECTION SERVICE
- * ============================================================================
- * 
- * FILE: WaterEjectionService.swift
- * PURPOSE: Manages water ejection sessions and audio generation
- * AUTHOR: Kevin Doyle Jr.
- * CREATED: [7/5/2025]
- * LAST MODIFIED: [7/9/2025]
- *
- * DESCRIPTION:
- * This file contains the water ejection service implementation for managing
- * water ejection sessions, audio generation, and session tracking.
- * 
- * ============================================================================
- */
-
 import Foundation
 import AVFoundation
+import UIKit
 import CoreData
 
-class WaterEjectionService: NSObject, ObservableObject {
+/// One short looping buffer bounds memory for every duration and avoids consumed-buffer callbacks.
+final class WaterEjectionService: NSObject, ObservableObject {
     static let shared = WaterEjectionService()
-    
-    @Published var isPlaying = false
-    @Published var currentTime: TimeInterval = 0
-    @Published var totalDuration: TimeInterval = 0
-    @Published var currentSession: WaterEjectionSession?
-    @Published var isRealtimeMode = false
-    @Published var currentFrequency: Double = 0
-    @Published var realtimeIntensity: Double = 50.0
-    
-    private var audioEngine: AVAudioEngine?
-    private var audioPlayer: AVAudioPlayerNode?
+    @Published private(set) var isPlaying = false
+    @Published private(set) var currentTime: TimeInterval = 0
+    @Published private(set) var totalDuration: TimeInterval = 0
+    @Published private(set) var currentSession: WaterEjectionSession?
+    @Published private(set) var isRealtimeMode = false
+    @Published private(set) var currentFrequency: Double = 0
+    @Published private(set) var realtimeIntensity: Double = 50
+    @Published var errorMessage: String?
+    @Published private(set) var completedSessionID: UUID?
+    @Published private(set) var lastCompletedDuration: TimeInterval = 0
+    @Published private(set) var isSpeakerTest = false
+    private var engine: AVAudioEngine?
+    private var player: AVAudioPlayerNode?
     private var timer: Timer?
-    private var startTime: Date?
+    private var startedAt: TimeInterval = 0
     private var currentDevice: DeviceType = .iphone
-    private var realtimeTimer: Timer?
-    
     private let coreDataService = CoreDataService.shared
-    
+    private var observers: [NSObjectProtocol] = []
+
     override init() {
         super.init()
-        setupAudioSession()
-    }
-    
-    private func setupAudioSession() {
-        do {
-            let audioSession = AVAudioSession.sharedInstance()
-            try audioSession.setCategory(.playback, mode: .default, options: [.mixWithOthers])
-            try audioSession.setActive(true)
-        } catch {
-            print("Failed to setup audio session: \(error)")
+        for name in [AVAudioSession.interruptionNotification, AVAudioSession.routeChangeNotification,
+                     UIApplication.didEnterBackgroundNotification, AVAudioSession.mediaServicesWereResetNotification] {
+            observers.append(NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                self?.stopEjection()
+            })
         }
     }
-    
-    func startEjection(device: DeviceType, intensity: IntensityLevel) {
+    func startEjection(device: DeviceType, intensity: IntensityLevel, useSavedSettings: Bool = true) {
         guard !isPlaying else { return }
-        
         currentDevice = device
-        
-        // Check if this is realtime mode
-        if intensity == .realtime {
-            isRealtimeMode = true
-            totalDuration = intensity.duration
-            
-            // Create session
-            let session = WaterEjectionSession(
-                deviceType: device,
-                intensityLevel: intensity,
-                duration: totalDuration,
-                startTime: Date(),
-                endTime: nil,
-                isCompleted: false
-            )
-            
-            currentSession = session
-            startTime = Date()
-            currentTime = 0
-            isPlaying = true
-            
-            // Start realtime audio
-            startRealtimeAudio()
-            
-            // Start timer
-            timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-                self?.updateTimer()
+        let defaults = UserDefaults.standard
+        let custom = useSavedSettings && defaults.bool(forKey: "useCustomIntensity") && intensity != .realtime
+        let customValue = defaults.double(forKey: "customIntensityValue")
+        let savedDuration = defaults.double(forKey: "customDuration")
+        let duration = custom && savedDuration.isFinite && savedDuration > 0 ? min(300, max(5, savedDuration)) : intensity.duration
+        isRealtimeMode = intensity == .realtime
+        let frequency: Double
+        if isRealtimeMode { frequency = realtimeFrequency(realtimeIntensity) }
+        else if custom && customValue.isFinite && customValue > 0 { frequency = baseFrequency * (0.5 + min(100, customValue) / 100 * 1.5) }
+        else {
+            let multipliers: [IntensityLevel: Double] = [.low: 0.8, .medium: 1, .high: 1.2, .emergency: 1.5]
+            frequency = baseFrequency * (multipliers[intensity] ?? 1)
+        }
+        currentSession = WaterEjectionSession(deviceType: device, intensityLevel: intensity, duration: duration)
+        begin(frequency: frequency, duration: duration, speakerTest: false)
+    }
+    func startSpeakerTest(frequency: Double, duration: TimeInterval = 10) {
+        guard !isPlaying else { return }
+        isRealtimeMode = false
+        currentSession = nil
+        begin(frequency: frequency, duration: duration, speakerTest: true)
+    }
+    private var baseFrequency: Double {
+        switch currentDevice {
+        case .iphone: return 165
+        case .ipad: return 220
+        case .macbook: return 440
+        case .applewatch: return 880
+        case .airpods: return 660
+        case .other: return 330
+        }
+    }
+    private func begin(frequency: Double, duration: TimeInterval, speakerTest: Bool) {
+        guard frequency.isFinite, duration.isFinite else { currentSession = nil; return }
+        errorMessage = nil
+        do {
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(.playback, mode: .default, options: [])
+            try session.setActive(true)
+            // Route tones through this device's speaker; do not play into headphones or Bluetooth.
+            guard session.currentRoute.outputs.allSatisfy({ $0.portType == .builtInSpeaker || $0.portType == .builtInReceiver }) else {
+                throw AudioError.externalOutput
             }
-            return
-        }
-        
-        // Check if custom intensity is being used
-        let useCustomIntensity = UserDefaults.standard.bool(forKey: "useCustomIntensity")
-        let customIntensityValue = UserDefaults.standard.double(forKey: "customIntensityValue")
-        let customDuration = UserDefaults.standard.double(forKey: "customDuration")
-        
-        // Calculate duration based on intensity or custom values
-        let duration: TimeInterval
-        let effectiveIntensity: IntensityLevel
-        
-        if useCustomIntensity && customIntensityValue > 0 && customDuration > 0 {
-            duration = customDuration
-            effectiveIntensity = intensity // We'll use custom values for frequency calculation
-        } else {
-            duration = intensity.duration
-            effectiveIntensity = intensity
-        }
-        
-        totalDuration = duration
-        
-        // Create session
-        let session = WaterEjectionSession(
-            deviceType: device,
-            intensityLevel: intensity,
-            duration: duration,
-            startTime: Date(),
-            endTime: nil,
-            isCompleted: false
-        )
-        
-        currentSession = session
-        startTime = Date()
-        currentTime = 0
-        isPlaying = true
-        isRealtimeMode = false
-        
-        // Start audio with custom or preset values
-        if useCustomIntensity && customIntensityValue > 0 {
-            playWaterEjectionAudio(device: device, customIntensity: customIntensityValue, duration: duration)
-        } else {
-            playWaterEjectionAudio(device: device, intensity: effectiveIntensity)
-        }
-        
-        // Start timer
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            self?.updateTimer()
+            guard let format = AVAudioFormat(standardFormatWithSampleRate: 44100, channels: 1) else { throw AudioError.unavailable }
+            let engine = AVAudioEngine(), player = AVAudioPlayerNode()
+            engine.attach(player)
+            engine.connect(player, to: engine.mainMixerNode, format: format)
+            self.engine = engine; self.player = player
+            try engine.start()
+            try scheduleTone(frequency: frequency)
+            totalDuration = min(300, max(1, duration))
+            currentTime = 0; startedAt = ProcessInfo.processInfo.systemUptime
+            isSpeakerTest = speakerTest; isPlaying = true
+            UIApplication.shared.isIdleTimerDisabled = true
+            player.play()
+            GrowthMetrics.shared.record(speakerTest ? "speaker_test_started" : "session_started")
+            timer = Timer(timeInterval: 0.2, repeats: true) { [weak self] _ in self?.tick() }
+            if let timer { RunLoop.main.add(timer, forMode: .common) }
+        } catch {
+            cleanup()
+            currentSession = nil; isRealtimeMode = false
+            errorMessage = error.localizedDescription
+            GrowthMetrics.shared.record("audio_start_failed")
         }
     }
-    
-    func stopEjection() {
+    private func scheduleTone(frequency: Double) throws {
+        let frequency = min(2000, max(50, frequency)).rounded()
+        guard let format = AVAudioFormat(standardFormatWithSampleRate: 44100, channels: 1),
+              let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: 44100),
+              let samples = buffer.floatChannelData?[0] else { throw AudioError.unavailable }
+        buffer.frameLength = 44100
+        for frame in 0..<44100 {
+            // Fade loop boundaries to avoid abrupt waveform transitions.
+            let envelope = min(1, Double(min(frame, 44099 - frame)) / 220)
+            samples[frame] = Float(0.25 * envelope * sin(2 * Double.pi * frequency * Double(frame) / 44100))
+        }
+        player?.stop()
+        player?.scheduleBuffer(buffer, at: nil, options: .loops)
+        currentFrequency = frequency
+    }
+    private func tick() {
         guard isPlaying else { return }
-        
-        // Stop audio
-        stopAudio()
-        
-        // Stop timer
-        timer?.invalidate()
-        timer = nil
-        
-        // Update session
+        currentTime = min(totalDuration, max(0, ProcessInfo.processInfo.systemUptime - startedAt))
+        if currentTime >= totalDuration { completeEjection() }
+    }
+    func updateRealtimeFrequency(intensity: Double) {
+        guard isPlaying, isRealtimeMode, intensity.isFinite else { return }
+        realtimeIntensity = min(100, max(0, intensity))
+        do { try scheduleTone(frequency: realtimeFrequency(realtimeIntensity)); player?.play() }
+        catch { errorMessage = error.localizedDescription; stopEjection() }
+    }
+    private func realtimeFrequency(_ intensity: Double) -> Double { baseFrequency * (0.5 + intensity / 100 * 1.5) }
+    func stopEjection() { finish(completed: false) }
+    func completeEjection() { finish(completed: true) }
+    private func finish(completed: Bool) {
+        guard isPlaying else { return }
+        let actual = min(totalDuration, max(0, ProcessInfo.processInfo.systemUptime - startedAt))
+        let wasTest = isSpeakerTest
+        let finishedID = currentSession?.id
+        // Clear state before stopping AVAudioEngine, preventing reentrant completion.
+        isPlaying = false
+        cleanup()
         if var session = currentSession {
-            session.endTime = Date()
-            session.isCompleted = false
-            session.duration = currentTime
-            
-            // Save to Core Data
+            session.endTime = Date(); session.duration = actual; session.isCompleted = completed
             coreDataService.saveWaterEjectionSession(session)
         }
-        
-        // Reset state
-        isPlaying = false
-        currentTime = 0
-        currentSession = nil
-        startTime = nil
-        isRealtimeMode = false
-        currentFrequency = 0
-    }
-    
-    func completeEjection() {
-        guard isPlaying else { return }
-        
-        // Stop audio
-        stopAudio()
-        
-        // Stop timer
-        timer?.invalidate()
-        timer = nil
-        
-        // Update session
-        if var session = currentSession {
-            session.endTime = Date()
-            session.isCompleted = true
-            session.duration = totalDuration
-            
-            // Save to Core Data
-            coreDataService.saveWaterEjectionSession(session)
-        }
-        
-        // Reset state
-        isPlaying = false
-        currentTime = 0
-        currentSession = nil
-        startTime = nil
-        isRealtimeMode = false
-        currentFrequency = 0
-    }
-    
-    private func updateTimer() {
-        guard let startTime = startTime else { return }
-        
-        currentTime = Date().timeIntervalSince(startTime)
-        
-        if currentTime >= totalDuration {
-            completeEjection()
+        currentSession = nil; currentTime = 0; isRealtimeMode = false; currentFrequency = 0; isSpeakerTest = false
+        GrowthMetrics.shared.record(wasTest ? (completed ? "speaker_test_completed" : "speaker_test_stopped") : (completed ? "session_completed" : "session_stopped"))
+        if completed, !wasTest {
+            lastCompletedDuration = actual
+            completedSessionID = finishedID
         }
     }
-    
-    private func getFrequency(for device: DeviceType, intensity: IntensityLevel) -> Double {
-        // Base frequencies optimized for different devices
-        let baseFrequencies: [DeviceType: Double] = [
-            .iphone: 165.0,    // E3 note - good for iPhone speakers
-            .ipad: 220.0,      // A3 note - optimized for iPad speakers
-            .macbook: 440.0,   // A4 note - good for MacBook speakers
-            .applewatch: 880.0, // A5 note - high frequency for small speakers (temporarily disabled)
-            .airpods: 660.0,   // E5 note - optimized for AirPods
-            .other: 330.0      // E4 note - general purpose
-        ]
-        
-        let baseFrequency = baseFrequencies[device] ?? 330.0
-        
-        // Adjust frequency based on intensity
-        let intensityMultipliers: [IntensityLevel: Double] = [
-            .low: 0.8,
-            .medium: 1.0,
-            .high: 1.2,
-            .emergency: 1.5
-        ]
-        
-        let multiplier = intensityMultipliers[intensity] ?? 1.0
-        return baseFrequency * multiplier
+    private func cleanup() {
+        timer?.invalidate(); timer = nil
+        player?.stop(); engine?.stop(); player = nil; engine = nil
+        UIApplication.shared.isIdleTimerDisabled = false
+        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     }
-    
-    private func playWaterEjectionAudio(device: DeviceType, intensity: IntensityLevel) {
-        let frequency = getFrequency(for: device, intensity: intensity)
-        let sampleRate: Double = 44100
-        let duration = intensity.duration
-        
-        // Generate audio buffer with safe unwrapping
-        let frameCount = Int(sampleRate * duration)
-        guard let audioFormat = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1),
-              let audioBuffer = AVAudioPCMBuffer(pcmFormat: audioFormat, frameCapacity: AVAudioFrameCount(frameCount)) else {
-            print("Failed to create audio buffer")
-            stopEjection()
-            return
-        }
-        
-        // Fill buffer with sine wave
-        guard let channelData = audioBuffer.floatChannelData?[0] else {
-            print("Failed to get audio channel data")
-            stopEjection()
-            return
-        }
-        
-        for frame in 0..<frameCount {
-            let time = Double(frame) / sampleRate
-            let amplitude: Float = 0.3 // Safe volume level
-            
-            // Create a sine wave with the calculated frequency
-            let sample = amplitude * Float(sin(2.0 * Double.pi * frequency * time))
-            // Add some variation to make it more effective
-            let variation = Float(sin(2.0 * Double.pi * 0.5 * time)) * 0.1
-            let finalSample = sample + variation
-            channelData[frame] = finalSample
-        }
-        
-        audioBuffer.frameLength = AVAudioFrameCount(frameCount)
-        
-        // Setup audio engine
-        audioEngine = AVAudioEngine()
-        audioPlayer = AVAudioPlayerNode()
-        
-        guard let audioEngine = audioEngine,
-              let audioPlayer = audioPlayer else { return }
-        
-        audioEngine.attach(audioPlayer)
-        audioEngine.connect(audioPlayer, to: audioEngine.mainMixerNode, format: audioBuffer.format)
-        
-        do {
-            try audioEngine.start()
-            audioPlayer.scheduleBuffer(audioBuffer, at: nil, options: .interrupts, completionHandler: { [weak self] in
-                DispatchQueue.main.async {
-                    self?.completeEjection()
-                }
-            })
-            audioPlayer.play()
-        } catch {
-            print("Failed to start audio: \(error)")
-            stopEjection()
-        }
-    }
-    
-    private func playWaterEjectionAudio(device: DeviceType, customIntensity: Double, duration: TimeInterval) {
-        // Get base frequency for the device
-        let baseFrequencies: [DeviceType: Double] = [
-            .iphone: 165.0,    // E3 note - good for iPhone speakers
-            .ipad: 220.0,      // A3 note - optimized for iPad speakers
-            .macbook: 440.0,   // A4 note - good for MacBook speakers
-            .applewatch: 880.0, // A5 note - high frequency for small speakers (temporarily disabled)
-            .airpods: 660.0,   // E5 note - optimized for AirPods
-            .other: 330.0      // E4 note - general purpose
-        ]
-        
-        let baseFrequency = baseFrequencies[device] ?? 330.0
-        
-        // Calculate custom frequency multiplier based on intensity percentage
-        // Map 0-100% to 0.5-2.0 multiplier range
-        let intensityMultiplier = 0.5 + (customIntensity / 100.0) * 1.5
-        let frequency = baseFrequency * intensityMultiplier
-        
-        let sampleRate: Double = 44100
-        
-        // Generate audio buffer with safe unwrapping
-        let frameCount = Int(sampleRate * duration)
-        guard let audioFormat = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1),
-              let audioBuffer = AVAudioPCMBuffer(pcmFormat: audioFormat, frameCapacity: AVAudioFrameCount(frameCount)) else {
-            print("Failed to create audio buffer")
-            stopEjection()
-            return
-        }
-        
-        // Fill buffer with sine wave
-        guard let channelData = audioBuffer.floatChannelData?[0] else {
-            print("Failed to get audio channel data")
-            stopEjection()
-            return
-        }
-        
-        for frame in 0..<frameCount {
-            let time = Double(frame) / sampleRate
-            let amplitude: Float = 0.3 // Safe volume level
-            
-            // Create a sine wave with the calculated frequency
-            let sample = amplitude * Float(sin(2.0 * Double.pi * frequency * time))
-            // Add some variation to make it more effective
-            let variation = Float(sin(2.0 * Double.pi * 0.5 * time)) * 0.1
-            let finalSample = sample + variation
-            channelData[frame] = finalSample
-        }
-        
-        audioBuffer.frameLength = AVAudioFrameCount(frameCount)
-        
-        // Setup audio engine
-        audioEngine = AVAudioEngine()
-        audioPlayer = AVAudioPlayerNode()
-        
-        guard let audioEngine = audioEngine,
-              let audioPlayer = audioPlayer else { return }
-        
-        audioEngine.attach(audioPlayer)
-        audioEngine.connect(audioPlayer, to: audioEngine.mainMixerNode, format: audioBuffer.format)
-        
-        do {
-            try audioEngine.start()
-            audioPlayer.scheduleBuffer(audioBuffer, at: nil, options: .interrupts, completionHandler: { [weak self] in
-                DispatchQueue.main.async {
-                    self?.completeEjection()
-                }
-            })
-            audioPlayer.play()
-        } catch {
-            print("Failed to start audio: \(error)")
-            stopEjection()
-        }
-    }
-    
-    private func stopAudio() {
-        audioPlayer?.stop()
-        audioEngine?.stop()
-        audioPlayer = nil
-        audioEngine = nil
-    }
-    
-    func getSessionHistory() -> [WaterEjectionSession] {
-        return coreDataService.getWaterEjectionSessions()
-    }
-    
+    func getSessionHistory() -> [WaterEjectionSession] { coreDataService.getWaterEjectionSessions() }
     func getSessionStats() -> SessionStats {
         let sessions = getSessionHistory()
-        
-        let totalSessions = sessions.count
-        let completedSessions = sessions.filter { $0.isCompleted }.count
-        let totalDuration = sessions.reduce(0) { $0 + $1.duration }
-        let averageDuration = totalSessions > 0 ? totalDuration / Double(totalSessions) : 0
-        
-        let deviceStats = Dictionary(grouping: sessions, by: { $0.deviceType })
-            .mapValues { $0.count }
-        
-        let intensityStats = Dictionary(grouping: sessions, by: { $0.intensityLevel })
-            .mapValues { $0.count }
-        
-        return SessionStats(
-            totalSessions: totalSessions,
-            completedSessions: completedSessions,
-            totalDuration: totalDuration,
-            averageDuration: averageDuration,
-            deviceStats: deviceStats,
-            intensityStats: intensityStats
-        )
+        let duration = sessions.reduce(0) { $0 + $1.duration }
+        return SessionStats(totalSessions: sessions.count, completedSessions: sessions.filter(\.isCompleted).count,
+            totalDuration: duration, averageDuration: sessions.isEmpty ? 0 : duration / Double(sessions.count),
+            deviceStats: Dictionary(grouping: sessions, by: \.deviceType).mapValues(\.count),
+            intensityStats: Dictionary(grouping: sessions, by: \.intensityLevel).mapValues(\.count))
     }
-    
-    func updateRealtimeFrequency(intensity: Double) {
-        guard isRealtimeMode && isPlaying else { return }
-        
-        realtimeIntensity = intensity
-        let newFrequency = calculateRealtimeFrequency(intensity: intensity)
-        currentFrequency = newFrequency
-        
-        // Update the audio with new frequency
-        updateRealtimeAudio(frequency: newFrequency)
-    }
-    
-    private func calculateRealtimeFrequency(intensity: Double) -> Double {
-        // Get base frequency for the device
-        let baseFrequencies: [DeviceType: Double] = [
-            .iphone: 165.0,    // E3 note - good for iPhone speakers
-            .ipad: 220.0,      // A3 note - optimized for iPad speakers
-            .macbook: 440.0,   // A4 note - good for MacBook speakers
-            .applewatch: 880.0, // A5 note - high frequency for small speakers (temporarily disabled)
-            .airpods: 660.0,   // E5 note - optimized for AirPods
-            .other: 330.0      // E4 note - general purpose
-        ]
-        
-        let baseFrequency = baseFrequencies[currentDevice] ?? 330.0
-        
-        // Calculate frequency multiplier based on intensity percentage
-        // Map 0-100% to 0.5-2.0 multiplier range
-        let intensityMultiplier = 0.5 + (intensity / 100.0) * 1.5
-        return baseFrequency * intensityMultiplier
-    }
-    
-    private func updateRealtimeAudio(frequency: Double) {
-        // Stop current audio
-        audioPlayer?.stop()
-        
-        // Generate new audio buffer with updated frequency
-        let sampleRate: Double = 44100
-        let bufferDuration: TimeInterval = 1.0 // 1 second buffer for smooth transitions
-        
-        let frameCount = Int(sampleRate * bufferDuration)
-        guard let audioFormat = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1),
-              let audioBuffer = AVAudioPCMBuffer(pcmFormat: audioFormat, frameCapacity: AVAudioFrameCount(frameCount)) else {
-            print("Failed to create realtime audio buffer")
-            return
-        }
-        
-        // Fill buffer with sine wave at new frequency
-        guard let channelData = audioBuffer.floatChannelData?[0] else {
-            print("Failed to get realtime audio channel data")
-            return
-        }
-        
-        for frame in 0..<frameCount {
-            let time = Double(frame) / sampleRate
-            let amplitude: Float = 0.3 // Safe volume level
-            
-            // Create a sine wave with the new frequency
-            let sample = amplitude * Float(sin(2.0 * Double.pi * frequency * time))
-            // Add some variation to make it more effective
-            let variation = Float(sin(2.0 * Double.pi * 0.5 * time)) * 0.1
-            let finalSample = sample + variation
-            channelData[frame] = finalSample
-        }
-        
-        audioBuffer.frameLength = AVAudioFrameCount(frameCount)
-        
-        // Schedule the new buffer
-        audioPlayer?.scheduleBuffer(audioBuffer, at: nil, options: .interrupts, completionHandler: { [weak self] in
-            DispatchQueue.main.async {
-                // If still in realtime mode, schedule the next buffer
-                if self?.isRealtimeMode == true && self?.isPlaying == true {
-                    self?.updateRealtimeAudio(frequency: frequency)
-                }
+    private enum AudioError: LocalizedError {
+        case externalOutput, unavailable
+        var errorDescription: String? {
+            switch self {
+            case .externalOutput: return "Disconnect headphones, Bluetooth or AirPlay before playing a tone. Audio plays through this device only."
+            case .unavailable: return "Audio is unavailable. Please try again."
             }
-        })
-        
-        audioPlayer?.play()
-    }
-    
-    private func startRealtimeAudio() {
-        let initialFrequency = calculateRealtimeFrequency(intensity: realtimeIntensity)
-        currentFrequency = initialFrequency
-        
-        // Setup audio engine for realtime mode
-        audioEngine = AVAudioEngine()
-        audioPlayer = AVAudioPlayerNode()
-        
-        guard let audioEngine = audioEngine,
-              let audioPlayer = audioPlayer else { return }
-        
-        audioEngine.attach(audioPlayer)
-        audioEngine.connect(audioPlayer, to: audioEngine.mainMixerNode, format: AVAudioFormat(standardFormatWithSampleRate: 44100, channels: 1)!)
-        
-        do {
-            try audioEngine.start()
-            updateRealtimeAudio(frequency: initialFrequency)
-        } catch {
-            print("Failed to start realtime audio: \(error)")
-            stopEjection()
         }
     }
 }

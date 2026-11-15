@@ -2,6 +2,30 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>AdMobInterstitialUnitID</key>
+	<string>ca-app-pub-6815311336585204/9270556090</string>
+	<key>AdMobRewardedUnitID</key>
+	<string>ca-app-pub-6815311336585204/7957474425</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.infinitumimagery.watereject</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>infinitumwatereject</string>
+			</array>
+		</dict>
+	</array>
+	<key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-6815311336585204~5510127729</string>
+	<key>SKAdNetworkItems</key>
+	<array>
+		<dict>
+			<key>SKAdNetworkIdentifier</key>
+			<string>cstr6suwn9.skadnetwork</string>
+		</dict>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -17,16 +41,5 @@
 			</array>
 		</dict>
 	</dict>
-	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-6815311336585204~5510127729</string>
-	<key>SKAdNetworkItems</key>
-	<array>
-		<dict>
-			<key>SKAdNetworkIdentifier</key>
-			<string>cstr6suwn9.skadnetwork</string>
-		</dict>
-	</array>
-	<key>CFBundleVersion</key>
-	<string>3</string>
 </dict>
 </plist>
