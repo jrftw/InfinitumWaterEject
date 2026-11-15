@@ -5,6 +5,7 @@ struct IntensityPickerView: View {
     @Binding var selectedIntensity: IntensityLevel
     @Environment(\.dismiss) private var dismiss
     
+    @State private var draftIntensity: IntensityLevel = .medium
     @State private var useCustomIntensity = false
     @State private var customIntensityValue: Double = 50.0
     @State private var customDuration: Double = 60.0
@@ -16,6 +17,7 @@ struct IntensityPickerView: View {
     
     var body: some View {
         NavigationStack {
+            ScrollView {
             VStack(spacing: 24) {
                 // Header
                 VStack(spacing: 8) {
@@ -41,9 +43,9 @@ struct IntensityPickerView: View {
                         ForEach(IntensityLevel.allCases, id: \.self) { intensity in
                             IntensityLevelRow(
                                 intensity: intensity,
-                                isSelected: selectedIntensity == intensity && !useCustomIntensity,
+                                isSelected: draftIntensity == intensity && !useCustomIntensity,
                                 onTap: {
-                                    selectedIntensity = intensity
+                                    draftIntensity = intensity
                                     useCustomIntensity = false
                                 }
                             )
@@ -66,12 +68,12 @@ struct IntensityPickerView: View {
                         
                         Spacer()
                         
-                        Toggle("", isOn: $useCustomIntensity)
+                        Toggle("Use custom settings", isOn: $useCustomIntensity).labelsHidden().accessibilityLabel("Use custom settings")
                             .onChange(of: useCustomIntensity) { newValue in
                                 if newValue {
                                     // Convert current preset to custom values
-                                    customIntensityValue = getIntensityValue(for: selectedIntensity)
-                                    customDuration = selectedIntensity.duration
+                                    customIntensityValue = getIntensityValue(for: draftIntensity)
+                                    customDuration = draftIntensity.duration
                                 }
                             }
                     }
@@ -183,7 +185,7 @@ struct IntensityPickerView: View {
                         Spacer()
                     }
                     
-                    Text("Higher intensity levels may be more effective but should be used with caution. Always follow device-specific safety guidelines.")
+                    Text("Intensity changes tone frequency and duration, not system volume. A stronger setting does not guarantee a better result. Stop if uncomfortable.")
                         .font(.caption)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.leading)
@@ -193,7 +195,7 @@ struct IntensityPickerView: View {
                 .cornerRadius(12)
                 
                 // Realtime Mode Info
-                if selectedIntensity == .realtime {
+                if draftIntensity == .realtime {
                     VStack(spacing: 8) {
                         HStack {
                             Image(systemName: "waveform.path.ecg")
@@ -219,10 +221,12 @@ struct IntensityPickerView: View {
                 Spacer()
             }
             .padding()
+            }
             .navigationTitle("Intensity")
             .navigationBarTitleDisplayMode(.inline)
             .navigationViewStyle(StackNavigationViewStyle())
             .onAppear {
+                draftIntensity = selectedIntensity
                 // Load existing custom values if they exist
                 let existingUseCustom = UserDefaults.standard.bool(forKey: "useCustomIntensity")
                 let existingIntensity = UserDefaults.standard.double(forKey: "customIntensityValue")
@@ -230,8 +234,8 @@ struct IntensityPickerView: View {
                 
                 if existingUseCustom && existingIntensity > 0 {
                     useCustomIntensity = true
-                    customIntensityValue = existingIntensity
-                    customDuration = existingDuration > 0 ? existingDuration : 60.0
+                    customIntensityValue = existingIntensity.isFinite ? min(100, max(0, existingIntensity)) : 50
+                    customDuration = existingDuration.isFinite && existingDuration > 0 ? min(300, max(10, existingDuration)) : 60.0
                 }
             }
             .navigationBarItems(
@@ -246,8 +250,9 @@ struct IntensityPickerView: View {
                         UserDefaults.standard.set(true, forKey: "useCustomIntensity")
                         
                         // Set to a special custom intensity level
-                        selectedIntensity = .emergency // This will be overridden by custom values
+                        selectedIntensity = .medium // Custom frequency and duration are stored separately.
                     } else {
+                        selectedIntensity = draftIntensity
                         // Clear custom values
                         UserDefaults.standard.removeObject(forKey: "customIntensityValue")
                         UserDefaults.standard.removeObject(forKey: "customDuration")

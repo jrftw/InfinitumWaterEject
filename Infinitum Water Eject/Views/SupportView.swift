@@ -39,12 +39,12 @@ struct HelpFAQView: View {
             
             FAQItem(
                 question: "How does water and dust ejection work?",
-                answer: "Infinitum Water Eject generates specific sound frequencies that help dislodge water droplets and dust particles from your device's speakers and internal components. The app uses scientifically-tuned frequencies optimized for different water and dust exposure levels."
+                answer: "The app plays tones through this device’s speaker. Sound may help move droplets near the speaker; it cannot remove internal moisture, clean ports, or confirm that a device is dry."
             )
             
             FAQItem(
                 question: "What devices are supported?",
-                answer: "The app supports iPhone, iPad, MacBook, Apple Watch, AirPods, and other electronic devices. Each device type has optimized frequencies and specific safety tips."
+                answer: "This release supports iPhone and iPad with iOS 16 or later. Audio plays through the device running the app, not a nearby Watch or AirPods."
             )
             
             FAQItem(
@@ -54,7 +54,7 @@ struct HelpFAQView: View {
             
             FAQItem(
                 question: "Is this app safe for my device?",
-                answer: "Yes, the app uses safe audio frequencies that won't damage your device. However, always follow the safety guidelines and consult a professional if water damage is severe."
+                answer: "Start at a low system volume, disconnect headphones, and keep the speaker away from your ears. Stop if uncomfortable. Follow your manufacturer’s guidance for wet or damaged devices."
             )
             
             FAQItem(
@@ -193,33 +193,33 @@ struct PrivacyPolicyView: View {
                 .font(.title2)
                 .fontWeight(.bold)
             
-            Text("Last updated: July 2025")
+            Text("Last updated: November 2026")
                 .font(.caption)
                 .foregroundColor(.secondary)
             
             PolicySection(
                 title: "Information We Collect",
-                content: "We collect minimal information necessary to provide our service. This includes device type, ejection session data, and app usage statistics. We do not collect personal information unless you choose to provide it through support requests."
+                content: "Session history, saved frequencies and optional diagnostic counters are stored on your device. We receive support information only when you choose to contact us or share a report."
             )
             
             PolicySection(
                 title: "How We Use Information",
-                content: "We use collected information to improve our water and dust ejection algorithms, provide personalized recommendations, and enhance app functionality. Session data helps us optimize frequencies for different devices and water/dust exposure levels."
+                content: "Local counters help you inspect completed sessions, ad loading and purchase events. Diagnostics are not automatically uploaded. You can disable or reset them in Settings."
             )
             
             PolicySection(
                 title: "Data Storage",
-                content: "All data is stored locally on your device using Core Data. We do not transmit your data to external servers unless you explicitly choose to share session statistics or contact support."
+                content: "The app stores session history in Core Data and settings in local preferences. Widgets read a shared local summary. Advertising and purchase services use network connections separately."
             )
             
             PolicySection(
                 title: "Third-Party Services",
-                content: "We may use third-party services for analytics and crash reporting to improve app performance. These services are configured to respect your privacy and do not collect personal information."
+                content: "Google AdMob supplies ads and may process information such as IP addresses, advertising interactions, device information and diagnostics under its policies. Available consent choices are presented before requesting ads. Apple processes purchases. Premium disables ad requests after entitlements are verified."
             )
             
             PolicySection(
                 title: "Your Rights",
-                content: "You have the right to access, modify, or delete your data at any time through the app settings. You can also disable data collection features in the app preferences."
+                content: "You can export session data, reset local diagnostic counters, and disable diagnostics in Settings. Where required, Advertising privacy choices lets you revisit consent. Deleting the app removes its local history; Apple retains purchase records under its own policies."
             )
             
             PolicySection(
@@ -243,7 +243,7 @@ struct TermsOfServiceView: View {
                 .font(.title2)
                 .fontWeight(.bold)
             
-            Text("Last updated: July 2025")
+            Text("Last updated: November 2026")
                 .font(.caption)
                 .foregroundColor(.secondary)
             
@@ -254,7 +254,7 @@ struct TermsOfServiceView: View {
             
             PolicySection(
                 title: "App Purpose",
-                content: "Infinitum Water Eject is designed to help prevent water and dust damage to electronic devices through sound frequency generation. The app is for preventive measures only and should not replace professional repair services."
+                content: "Infinitum Water Eject plays speaker tones and provides audio tests. It cannot detect water, confirm dryness, prevent damage, or replace professional repair."
             )
             
             PolicySection(

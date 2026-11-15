@@ -1,233 +1,65 @@
-//
-//  WaterEjectWidgetExtension.swift
-//  WaterEjectWidgetExtension
-//
-//  Created by Kevin Doyle Jr. on 7/7/25.
-//
-
 import WidgetKit
 import SwiftUI
-
-struct Provider: TimelineProvider {
-    func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(
-            date: Date(), 
-            sessionCount: 0, 
-            weeklySessions: 0, 
-            completionRate: 0, 
-            averageDuration: 0, 
-            lastSessionDate: Date(),
-            achievementCount: 0,
-            currentStreak: 0,
-            isPremium: false
-        )
-    }
-
-    func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
-        let entry = getCurrentEntry()
-        completion(entry)
-    }
-
-    func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
-        var entries: [SimpleEntry] = []
-
-        // Generate a timeline with current data and future updates
-        let currentDate = Date()
-        for hourOffset in 0 ..< 24 {
-            let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-            let entry = getCurrentEntry(date: entryDate)
-            entries.append(entry)
-        }
-
-        let timeline = Timeline(entries: entries, policy: .atEnd)
-        completion(timeline)
-    }
-    
-    private func getCurrentEntry(date: Date = Date()) -> SimpleEntry {
-        // Get data from UserDefaults (shared with main app)
-        let userDefaults = UserDefaults(suiteName: "group.com.infinitumimagery.watereject")
-        
-        let sessionCount = userDefaults?.integer(forKey: "totalSessions") ?? 0
-        let weeklySessions = userDefaults?.integer(forKey: "weeklySessions") ?? 0
-        let completionRate = userDefaults?.double(forKey: "completionRate") ?? 0
-        let averageDuration = userDefaults?.double(forKey: "averageDuration") ?? 0
-        let lastSessionDate = userDefaults?.object(forKey: "lastSessionDate") as? Date ?? Date()
-        let achievementCount = userDefaults?.integer(forKey: "achievementCount") ?? 0
-        let currentStreak = userDefaults?.integer(forKey: "currentStreak") ?? 0
-        let isPremium = userDefaults?.bool(forKey: "isPremium") ?? false
-        
-        return SimpleEntry(
-            date: date,
-            sessionCount: sessionCount,
-            weeklySessions: weeklySessions,
-            completionRate: completionRate,
-            averageDuration: averageDuration,
-            lastSessionDate: lastSessionDate,
-            achievementCount: achievementCount,
-            currentStreak: currentStreak,
-            isPremium: isPremium
-        )
-    }
-}
 
 struct SimpleEntry: TimelineEntry {
     let date: Date
     let sessionCount: Int
-    let weeklySessions: Int
-    let completionRate: Double
-    let averageDuration: Double
-    let lastSessionDate: Date
-    let achievementCount: Int
-    let currentStreak: Int
-    let isPremium: Bool
+    let lastSession: Date?
 }
-
-struct WaterEjectWidgetExtensionEntryView : View {
-    var entry: SimpleEntry
-    @Environment(\.widgetFamily) var family
-
-    var body: some View {
-        switch family {
-        case .systemSmall:
-            SmallWidgetView(entry: entry)
-        case .systemMedium:
-            MediumWidgetView(entry: entry)
-        default:
-            SmallWidgetView(entry: entry)
-        }
+struct Provider: TimelineProvider {
+    func placeholder(in context: Context) -> SimpleEntry { SimpleEntry(date: Date(), sessionCount: 3, lastSession: Date()) }
+    func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> Void) { completion(entry()) }
+    func getTimeline(in context: Context, completion: @escaping (Timeline<SimpleEntry>) -> Void) {
+        completion(Timeline(entries: [entry()], policy: .after(Date().addingTimeInterval(1800))))
+    }
+    private func entry() -> SimpleEntry {
+        let defaults = UserDefaults(suiteName: "group.com.infinitumimagery.watereject")
+        return SimpleEntry(date: Date(), sessionCount: defaults?.integer(forKey: "totalSessions") ?? 0,
+            lastSession: defaults?.object(forKey: "lastSessionDate") as? Date)
     }
 }
-
-struct SmallWidgetView: View {
-    var entry: SimpleEntry
-    
+struct WaterEjectWidgetView: View {
+    let entry: SimpleEntry
+    @Environment(\.widgetFamily) private var family
     var body: some View {
-        VStack(spacing: 8) {
-            HStack {
-                Image(systemName: "drop.fill")
-                    .font(.title2)
-                    .foregroundColor(.blue)
-                
-                Spacer()
-                
-                if entry.achievementCount > 0 {
-                    HStack(spacing: 2) {
-                        Image(systemName: "trophy.fill")
-                            .font(.caption)
-                            .foregroundColor(.yellow)
-                        Text("\(entry.achievementCount)")
-                            .font(.caption)
-                            .fontWeight(.bold)
+        Group {
+            if family == .accessoryCircular {
+                Image(systemName: "drop.fill").font(.title).accessibilityLabel("Start Water Ejection")
+            } else if family == .accessoryRectangular {
+                VStack(alignment: .leading) {
+                    Label("Water Eject", systemImage: "drop.fill").font(.headline)
+                    Text("Tap for a 30-second cycle").font(.caption)
+                }
+            } else {
+                VStack(alignment: .leading, spacing: 10) {
+                    Label("Water Eject", systemImage: "drop.fill").font(.headline)
+                    Text("Ready when you need it").font(.subheadline).foregroundStyle(.secondary)
+                    if family == .systemMedium {
+                        HStack {
+                            Link(destination: URL(string: "infinitumwatereject://start")!) { Label("Start 30s", systemImage: "play.fill") }
+                            Spacer()
+                            Link(destination: URL(string: "infinitumwatereject://tools")!) { Label("Speaker test", systemImage: "waveform") }
+                        }.font(.subheadline.bold())
+                    } else {
+                        Label("Start 30s", systemImage: "play.circle.fill").font(.title3.bold())
                     }
+                    Text("\(entry.sessionCount) sessions recorded").font(.caption2).foregroundStyle(.secondary)
                 }
             }
-            
-            Text("\(entry.sessionCount)")
-                .font(.headline)
-                .fontWeight(.bold)
-            
-            Text("Sessions")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            
-            Spacer()
-            
-            if entry.currentStreak > 0 {
-                HStack(spacing: 4) {
-                    Image(systemName: "flame.fill")
-                        .font(.caption2)
-                        .foregroundColor(.orange)
-                    Text("\(entry.currentStreak)")
-                        .font(.caption2)
-                        .fontWeight(.medium)
-                }
-            }
-        }
-        .padding()
+        }.widgetURL(URL(string: "infinitumwatereject://start"))
     }
 }
-
-struct MediumWidgetView: View {
-    var entry: SimpleEntry
-    
-    var body: some View {
-        HStack(spacing: 16) {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Image(systemName: "drop.fill")
-                        .font(.title2)
-                        .foregroundColor(.blue)
-                    
-                    Text("Water Eject")
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                    
-                    Spacer()
-                    
-                    if entry.isPremium {
-                        Image(systemName: "crown.fill")
-                            .font(.caption)
-                            .foregroundColor(.yellow)
-                    }
-                }
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Total: \(entry.sessionCount)")
-                        .font(.caption)
-                    
-                    Text("This Week: \(entry.weeklySessions)")
-                        .font(.caption)
-                    
-                    if entry.currentStreak > 0 {
-                        HStack(spacing: 4) {
-                            Image(systemName: "flame.fill")
-                                .font(.caption2)
-                                .foregroundColor(.orange)
-                            Text("\(entry.currentStreak) day streak")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    
-                    if entry.achievementCount > 0 {
-                        HStack(spacing: 4) {
-                            Image(systemName: "trophy.fill")
-                                .font(.caption2)
-                                .foregroundColor(.yellow)
-                            Text("\(entry.achievementCount) achievements")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                }
-            }
-            
-            Spacer()
-            
-            VStack(spacing: 8) {
-                Text("\(entry.completionRate, specifier: "%.0f")%")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.green)
-                
-                Text("Success")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-            }
-        }
-        .padding()
-    }
-}
-
 struct WaterEjectWidgetExtension: Widget {
-    let kind: String = "WaterEjectWidgetExtension"
-
+    let kind = "WaterEjectWidgetExtension"
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: Provider()) { entry in
-            WaterEjectWidgetExtensionEntryView(entry: entry)
-        }
-        .configurationDisplayName("Water & Dust Eject")
-        .description("Quick access to water and dust ejection for your devices")
-        .supportedFamilies([.systemSmall, .systemMedium])
+            if #available(iOSApplicationExtension 17.0, *) {
+                WaterEjectWidgetView(entry: entry).containerBackground(.fill.tertiary, for: .widget)
+            } else {
+                WaterEjectWidgetView(entry: entry).padding().background(Color(.systemBackground))
+            }
+        }.configurationDisplayName("Water Eject")
+            .description("Open a 30-second cycle or your speaker tools. Audio plays after the app opens.")
+            .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular, .accessoryRectangular])
     }
 }

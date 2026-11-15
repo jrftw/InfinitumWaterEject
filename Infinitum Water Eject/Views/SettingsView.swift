@@ -1,10 +1,12 @@
 import SwiftUI
 import UniformTypeIdentifiers
+import UserNotifications
 
 @available(iOS 16.0, *)
 struct SettingsView: View {
     @StateObject private var coreDataService = CoreDataService.shared
     @StateObject private var notificationService = NotificationService.shared
+    @StateObject private var ads = AdMobService.shared
     @StateObject private var subscriptionService = SubscriptionService.shared
     @EnvironmentObject private var themeService: ThemeService
     @Environment(\.appTheme) var theme: HolidayTheme
@@ -26,6 +28,15 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             List {
+                Section("Privacy & diagnostics") {
+                    NavigationLink("Monetization diagnostics") { GrowthDiagnosticsView() }
+                    if ads.privacyOptionsRequired {
+                        Button("Advertising privacy choices") { AdMobService.shared.showPrivacyOptions() }
+                    }
+                }
+                Section("More") {
+                    NavigationLink("Achievements") { AchievementsView() }
+                }
                 // Disclaimer Section
                 Section {
                     Button(action: { showingDisclaimer = true }) {
@@ -147,10 +158,12 @@ struct SettingsView: View {
                                 updatedSettings.notificationsEnabled = newValue
                                 if newValue {
                                     notificationService.requestPermission()
+                                    notificationService.scheduleDailyReminder(at: updatedSettings.dailyReminderTime)
                                 }
+                                if !newValue { UNUserNotificationCenter.current().removeAllPendingNotificationRequests() }
                                 coreDataService.saveUserSettings(updatedSettings)
                             }
-                        ))
+                        )).accessibilityLabel("Notifications")
                     }
                     
                     // Daily Reminder Time
@@ -183,6 +196,7 @@ struct SettingsView: View {
                                     DatePicker("", selection: Binding(
                                         get: { customReminders[idx] },
                                         set: { newDate in
+                                            notificationService.cancelCustomReminder(at: customReminders[idx])
                                             customReminders[idx] = newDate
                                             scheduleCustomReminder(at: newDate)
                                         }
@@ -368,23 +382,7 @@ struct SettingsView: View {
                 TipsView()
             }
             .sheet(isPresented: $showingSupport) {
-                if #available(iOS 16.0, *) {
-                    SupportHelpView()
-                } else {
-                    VStack(spacing: 16) {
-                        Text("Support & Help")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                        Text("This feature requires iOS 16.0 or newer.")
-                            .font(.body)
-                            .multilineTextAlignment(.center)
-                        Button("Close") {
-                            showingSupport = false
-                        }
-                        .padding()
-                    }
-                    .padding()
-                }
+                SupportHelpView()
             }
                     .sheet(isPresented: $showingChangeLog) {
             ChangeLogView()
@@ -399,7 +397,7 @@ struct SettingsView: View {
             //     PremiumOfferView()
             // }
             .onAppear {
-                // Theme is now managed by the new HolidayThemeManager
+                customReminders = (UserDefaults.standard.array(forKey: "customReminderTimes") as? [Date]) ?? []
             }
         }
     }
@@ -459,6 +457,7 @@ struct SettingsView: View {
     
     private func addCustomReminder() {
         let nextHour = Calendar.current.date(byAdding: .hour, value: 1, to: Date()) ?? Date()
+        guard customReminders.count < 10 else { return }
         customReminders.append(nextHour)
         scheduleCustomReminder(at: nextHour)
     }
@@ -467,10 +466,12 @@ struct SettingsView: View {
             let date = customReminders[index]
             customReminders.remove(at: index)
             notificationService.cancelCustomReminder(at: date)
+            UserDefaults.standard.set(customReminders, forKey: "customReminderTimes")
         }
     }
     private func scheduleCustomReminder(at date: Date) {
         notificationService.scheduleCustomReminder(at: date)
+        UserDefaults.standard.set(customReminders, forKey: "customReminderTimes")
     }
 }
 

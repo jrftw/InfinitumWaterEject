@@ -1,404 +1,296 @@
-/*
- * ============================================================================
- * INFINITUM WATER EJECT - ADMOB ADVERTISEMENT SERVICE
- * ============================================================================
- * 
- * FILE: AdMobService.swift
- * PURPOSE: Manages Google AdMob advertisement integration and display
- * AUTHOR: Kevin Doyle Jr.
- * CREATED: [7/5/2025]
- * LAST MODIFIED: [7/9/2025]
- *
- * DESCRIPTION:
- * This file contains the complete AdMob advertisement service implementation
- * for the Infinitum Water Eject application. It manages banner ad loading,
- * display, and lifecycle events while respecting premium user status.
- * The service provides multiple banner ad view implementations for different
- * use cases and includes smart ad loading with retry mechanisms.
- * 
- * ARCHITECTURE OVERVIEW:
- * - AdMobService: Singleton service class managing ad initialization and state
- * - Banner Ad Views: Multiple UIViewRepresentable implementations for different scenarios
- * - Premium User Handling: Automatically disables ads for premium subscribers
- * - Preloading System: Preloads ads for better user experience
- * - Retry Mechanism: Automatic retry on ad load failures
- * - State Management: Published properties for reactive UI updates
- * 
- * KEY COMPONENTS:
- * 1. AdMobService: Main service class with singleton pattern
- * 2. PreloadedBannerAdView: Uses preloaded ads for immediate display
- * 3. BannerAdView: Standard banner ad implementation
- * 4. SmartBannerAdView: Adaptive banner for different screen sizes
- * 5. ConditionalBannerAdView: Only shows ads when ready and loaded
- * 6. BannerViewDelegate: Handles ad lifecycle events
- * 
- * AD TYPES SUPPORTED:
- * - Banner Ads: Standard rectangular ads at bottom of screens
- * - Smart Banners: Adaptive banners that adjust to screen size
- * - Preloaded Banners: Pre-cached ads for instant display
- * - Conditional Banners: Context-aware ad display
- * 
- * PREMIUM USER INTEGRATION:
- * - Automatically detects premium subscription status
- * - Returns empty ad unit ID for premium users
- * - Completely disables ad loading for premium users
- * - Respects user's premium status across all ad types
- * 
- * DEPENDENCIES:
- * - SwiftUI: UI framework for view implementations
- * - GoogleMobileAds: Google's AdMob SDK for iOS
- * - Foundation: Basic iOS functionality
- * 
- * TODO LIST:
- * - [ ] Add interstitial ad support for premium upgrade prompts
- * - [ ] Implement rewarded video ads for premium features
- * - [ ] Add ad frequency capping to prevent ad fatigue
- * - [ ] Create ad performance analytics and reporting
- * - [ ] Implement A/B testing for ad placement optimization
- * - [ ] Add ad content filtering for family-friendly content
- * - [ ] Create ad loading timeout handling
- * - [ ] Implement ad refresh intervals for better performance
- * 
- * FEATURE SUGGESTIONS:
- * - [ ] Add native ad support for better user experience
- * - [ ] Implement ad personalization based on user behavior
- * - [ ] Create ad scheduling based on user activity patterns
- * - [ ] Add ad performance optimization algorithms
- * - [ ] Implement ad revenue tracking and analytics
- * - [ ] Create ad placement recommendations engine
- * - [ ] Add ad content relevance scoring
- * - [ ] Implement ad user feedback collection
- * 
- * TECHNICAL NOTES:
- * - Uses singleton pattern for global ad state management
- * - Implements proper delegate patterns for ad lifecycle
- * - Provides multiple banner implementations for flexibility
- * - Handles ad loading failures gracefully with retry logic
- * - Respects premium user status automatically
- * - Uses published properties for reactive UI updates
- * - Implements proper memory management for ad views
- * 
- * ============================================================================
- */
-
 import SwiftUI
 import GoogleMobileAds
+import UserMessagingPlatform
+import Combine
 
-// MARK: - AdMob Service Class
-// Singleton service class that manages all AdMob advertisement functionality
-// Handles ad initialization, loading, and state management across the app
-
-class AdMobService: NSObject, ObservableObject {
-    // MARK: - Singleton Instance
-    // Shared instance for global access to ad service functionality
+@MainActor
+final class AdMobService: NSObject, ObservableObject, FullScreenContentDelegate {
     static let shared = AdMobService()
-    
-    // MARK: - AdMob Configuration
-    // AdMob app and ad unit identifiers for production and testing
-    
-    /// AdMob App ID for the Infinitum Water Eject application
-    /// Used to initialize the Google Mobile Ads SDK
-    private let appId = "ca-app-pub-6815311336585204~5510127729"
-    
-    /// Production banner ad unit ID for live advertisements
-    /// Displays real ads to users in production environment
-    private let bannerAdUnitId = "ca-app-pub-6815311336585204/1784836834"
-    
-    // MARK: - Test Configuration (Development)
-    // Test ad unit ID for development and testing purposes
-    // Uncomment the line below to use test ads during development
-    // private let bannerAdUnitId = "ca-app-pub-3940256099942544/2934735716"
-    
-    // MARK: - Published Properties
-    // Observable properties that trigger UI updates when ad state changes
-    
-    /// Indicates whether the AdMob SDK has been successfully initialized
-    /// Used to determine if ads can be loaded and displayed
-    @Published var isAdMobInitialized = false
-    
-    /// Indicates whether a banner ad has been successfully loaded
-    /// Used to show/hide ads based on loading status
-    @Published var isAdLoaded = false
-    
-    // MARK: - Private Properties
-    // Internal properties for managing ad loading and display
-    
-    /// Preloaded banner view for instant ad display
-    /// Cached banner ad that can be displayed immediately
-    private var bannerView: BannerView?
-    
-    // MARK: - Initialization
-    // Private initializer for singleton pattern with AdMob SDK setup
+    @Published private(set) var isAdMobInitialized = false
+    @Published private(set) var privacyOptionsRequired = false
+    @Published private(set) var rewardedReady = false
+    @Published private(set) var isPresenting = false
+    @Published private(set) var toolsUnlockedUntil: Date? = UserDefaults.standard.object(forKey: "toolsUnlockedUntil") as? Date
+    @Published private(set) var consentRevision = 0
+    @Published var message: String?
+    private var consentRequested = false
+    private var consentFlowCompleted = false
+    private var starting = false
+    private var interstitial: InterstitialAd?
+    private var rewarded: RewardedAd?
+    private var activeInterstitial: InterstitialAd?
+    private var activeRewarded: RewardedAd?
+    private var interstitialLoadedAt: Date?
+    private var rewardedLoadedAt: Date?
+    private var loadingFullScreen = false
+    private var retryAttempts = 0
+    private var retryWork: DispatchWorkItem?
+    private var subscriptions = Set<AnyCancellable>()
+    private let launchedAt = Date()
+
     private override init() {
         super.init()
-        
-        // MARK: - AdMob SDK Initialization
-        // Initialize Google Mobile Ads SDK with completion handler
-        // Sets up the foundation for all ad functionality
-        MobileAds.shared.start { status in
-            DispatchQueue.main.async {
-                self.isAdMobInitialized = true  // Mark SDK as initialized
-                self.preloadBannerAd()          // Start preloading banner ads
-            }
-        }
+        SubscriptionService.shared.$isPremium.combineLatest(SubscriptionService.shared.$entitlementChecked)
+            .receive(on: DispatchQueue.main).sink { [weak self] premium, checked in
+                guard let self, checked else { return }
+                if premium {
+                    self.interstitial = nil; self.rewarded = nil; self.rewardedReady = false
+                    self.retryWork?.cancel()
+                }
+                else { self.startIfPermitted() }
+            }.store(in: &subscriptions)
     }
-    
-    // MARK: - Ad Unit ID Management
-    // Returns the appropriate ad unit ID based on user's premium status
-    
-    /// Returns the banner ad unit ID, or empty string for premium users
-    /// Automatically handles premium user ad disabling
-    func getBannerAdUnitId() -> String {
-        // MARK: - Premium User Check
-        // Check if user has premium subscription - premium users see no ads
-        let isPremium = UserDefaults.standard.bool(forKey: "isPremium")
-        
+    var canRequestAds: Bool {
+        consentFlowCompleted && SubscriptionService.shared.entitlementChecked && !SubscriptionService.shared.isPremium &&
+        ConsentInformation.shared.canRequestAds && UIApplication.shared.applicationState == .active
+    }
+    var toolsUnlocked: Bool { toolsUnlockedUntil.map { $0 > Date() } ?? false }
+    private func unit(_ key: String, test: String) -> String {
         #if DEBUG
-        // Disable ads for debug builds and simulator
-        return ""
+        return test
         #else
-        if isPremium {
-            return "" // Return empty string to indicate no ads should be shown
-        }
-        return bannerAdUnitId  // Return production ad unit ID for non-premium users
+        return Bundle.main.object(forInfoDictionaryKey: key) as? String ?? ""
         #endif
     }
-    
-    // MARK: - Banner Ad Preloading
-    // Preloads banner ads for better user experience and faster display
-    
-    /// Preloads a banner ad for immediate display when needed
-    /// Creates and configures banner view with proper delegate setup
-    private func preloadBannerAd() {
-        bannerView = BannerView(adSize: AdSizeBanner)           // Create banner view with standard size
-        bannerView?.adUnitID = bannerAdUnitId                   // Set the ad unit ID
-        bannerView?.rootViewController = getRootViewController() // Set root view controller for ad display
-        bannerView?.delegate = self                             // Set delegate for ad lifecycle events
-        bannerView?.load(Request())                             // Start loading the ad
+    func getBannerAdUnitId() -> String {
+        guard canRequestAds, isAdMobInitialized else { return "" }
+        #if DEBUG
+        return "ca-app-pub-3940256099942544/2934735716"
+        #else
+        return "ca-app-pub-6815311336585204/1784836834"
+        #endif
     }
-    
-    // MARK: - Preloaded Banner Access
-    // Provides access to preloaded banner views for immediate display
-    
-    /// Returns the preloaded banner view if available
-    /// Used by PreloadedBannerAdView for instant ad display
-    func getPreloadedBannerView() -> BannerView? {
-        return bannerView
-    }
-}
-
-// MARK: - Banner View Delegate Implementation
-// Handles ad lifecycle events including successful loads and failures
-
-extension AdMobService: BannerViewDelegate {
-    // MARK: - Ad Load Success
-    // Called when a banner ad is successfully loaded and ready for display
-    
-    /// Handles successful banner ad loading
-    /// Updates UI state and logs success for debugging
-    func bannerViewDidReceiveAd(_ bannerView: BannerView) {
-        DispatchQueue.main.async {
-            self.isAdLoaded = true  // Update UI state to indicate ad is ready
-        }
-        print("Banner ad loaded successfully")  // Log success for debugging
-    }
-    
-    // MARK: - Ad Load Failure
-    // Called when banner ad loading fails, implements retry mechanism
-    
-    /// Handles banner ad loading failures with automatic retry
-    /// Updates UI state and schedules retry after delay
-    func bannerView(_ bannerView: BannerView, didFailToReceiveAdWithError error: Error) {
-        DispatchQueue.main.async {
-            self.isAdLoaded = false  // Update UI state to indicate ad is not ready
-            
-            // MARK: - Automatic Retry Mechanism
-            // Retry loading the ad after a 5-second delay
-            // Helps handle temporary network issues or ad server problems
-            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
-                self.preloadBannerAd()
+    func prepare() {
+        guard !consentRequested, let controller = Self.presenter, !WaterEjectionService.shared.isPlaying else { return }
+        consentRequested = true
+        ConsentInformation.shared.requestConsentInfoUpdate(with: RequestParameters()) { [weak self] error in
+            Task { @MainActor in
+                guard let self else { return }
+                self.privacyOptionsRequired = ConsentInformation.shared.privacyOptionsRequirementStatus == .required
+                if error == nil {
+                    do { try await ConsentForm.loadAndPresentIfRequired(from: controller) }
+                    catch { GrowthMetrics.shared.record("consent_form_failed") }
+                    self.privacyOptionsRequired = ConsentInformation.shared.privacyOptionsRequirementStatus == .required
+                    self.consentRevision += 1
+                    self.consentFlowCompleted = true
+                    self.startIfPermitted()
+                } else {
+                    GrowthMetrics.shared.record("consent_update_failed")
+                    self.consentFlowCompleted = true
+                    self.startIfPermitted()
+                }
             }
         }
-        print("Banner ad failed to load: \(error.localizedDescription)")  // Log error for debugging
     }
-}
-
-// MARK: - Preloaded Banner Ad View
-// SwiftUI wrapper for preloaded banner ads with instant display capability
-
-struct PreloadedBannerAdView: UIViewRepresentable {
-    /// Ad unit ID for the banner ad
-    let adUnitId: String
-    
-    // MARK: - UIView Creation
-    // Creates the banner view, preferring preloaded ads for instant display
-    
-    /// Creates a banner view, using preloaded ad if available
-    /// Falls back to creating new banner if preloaded one is not available
-    func makeUIView(context: Context) -> BannerView {
-        if let preloadedBanner = AdMobService.shared.getPreloadedBannerView() {
-            return preloadedBanner  // Use preloaded banner for instant display
-        } else {
-            // MARK: - Fallback Banner Creation
-            // Create new banner if preloaded one is not available
-            // Ensures ads can still be displayed even without preloading
-            let bannerView = BannerView(adSize: AdSizeBanner)
-            bannerView.adUnitID = adUnitId
-            bannerView.rootViewController = getRootViewController()
-            bannerView.load(Request())
-            return bannerView
+    func showPrivacyOptions() {
+        guard let controller = Self.presenter, !isPresenting else { return }
+        ConsentForm.presentPrivacyOptionsForm(from: controller) { [weak self] error in
+            Task { @MainActor in
+                if let error { self?.message = error.localizedDescription }
+                self?.interstitial = nil; self?.rewarded = nil; self?.rewardedReady = false
+                self?.consentRevision += 1
+                self?.startIfPermitted()
+            }
         }
     }
-    
-    // MARK: - UIView Updates
-    // No updates needed for banner views - they are static once created
-    
-    func updateUIView(_ uiView: BannerView, context: Context) {
-        // No updates needed - banner views are static once created
+    private func startIfPermitted() {
+        guard canRequestAds else { return }
+        if isAdMobInitialized { preloadFullScreen(); return }
+        guard !starting else { return }
+        starting = true
+        MobileAds.shared.requestConfiguration.maxAdContentRating = GADMaxAdContentRating.general
+        MobileAds.shared.start { [weak self] _ in
+            Task { @MainActor in
+                self?.starting = false
+                self?.isAdMobInitialized = true
+                self?.preloadFullScreen()
+            }
+        }
+    }
+    func preloadFullScreen() {
+        guard canRequestAds, isAdMobInitialized, !loadingFullScreen else { return }
+        loadingFullScreen = true
+        retryWork?.cancel()
+        Task {
+            defer {
+                loadingFullScreen = false
+                if canRequestAds, (interstitial == nil || rewarded == nil), retryAttempts < 3 {
+                    retryAttempts += 1
+                    let work = DispatchWorkItem { AdMobService.shared.preloadFullScreen() }
+                    retryWork = work
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 15 * pow(2, Double(retryAttempts - 1)), execute: work)
+                } else if interstitial != nil, rewarded != nil { retryAttempts = 0 }
+            }
+            let interstitialID = unit("AdMobInterstitialUnitID", test: "ca-app-pub-3940256099942544/4411468910")
+            let rewardedID = unit("AdMobRewardedUnitID", test: "ca-app-pub-3940256099942544/1712485313")
+            if interstitial == nil, !interstitialID.isEmpty {
+                do {
+                    GrowthMetrics.shared.record("interstitial_requested")
+                    let ad = try await InterstitialAd.load(with: interstitialID, request: Request())
+                    if canRequestAds {
+                        interstitial = ad; interstitialLoadedAt = Date(); configure(ad)
+                        GrowthMetrics.shared.record("interstitial_loaded")
+                    }
+                } catch { GrowthMetrics.shared.record("interstitial_load_failed") }
+            }
+            if rewarded == nil, !rewardedID.isEmpty, canRequestAds {
+                do {
+                    GrowthMetrics.shared.record("rewarded_requested")
+                    let ad = try await RewardedAd.load(with: rewardedID, request: Request())
+                    if canRequestAds {
+                        rewarded = ad; rewardedLoadedAt = Date(); rewardedReady = true
+                        ad.fullScreenContentDelegate = self
+                        ad.paidEventHandler = { value in
+                            GrowthMetrics.shared.recordRevenue(value: value.value.decimalValue, currency: value.currencyCode, precision: value.precision.rawValue)
+                        }
+                        GrowthMetrics.shared.record("rewarded_loaded")
+                    }
+                } catch { GrowthMetrics.shared.record("rewarded_load_failed") }
+            }
+        }
+    }
+    private func configure(_ ad: InterstitialAd) {
+        ad.fullScreenContentDelegate = self
+        ad.paidEventHandler = { value in
+            GrowthMetrics.shared.recordRevenue(value: value.value.decimalValue, currency: value.currencyCode, precision: value.precision.rawValue)
+        }
+    }
+    /// Called only immediately after a real cycle finishes. Never queue an ad for later navigation.
+    func sessionCompleted() {
+        let defaults = UserDefaults.standard
+        let count = defaults.integer(forKey: "adCompletedSessions") + 1
+        defaults.set(count, forKey: "adCompletedSessions")
+        let today = Calendar.current.startOfDay(for: Date())
+        if defaults.object(forKey: "adDay") as? Date != today {
+            defaults.set(today, forKey: "adDay"); defaults.set(0, forKey: "adsShownToday")
+        }
+        guard canRequestAds, !isPresenting, !WaterEjectionService.shared.isPlaying,
+              AppNavigation.shared.selectedTab == 0,
+              Date().timeIntervalSince(launchedAt) >= 25,
+              AdPlacementPolicy.allows(completed: count, shownToday: defaults.integer(forKey: "adsShownToday"),
+                  lastShown: defaults.object(forKey: "lastFullScreenAd") as? Date, now: Date()),
+              let controller = Self.presenter, controller.presentedViewController == nil,
+              let ad = interstitial, let loaded = interstitialLoadedAt, Date().timeIntervalSince(loaded) < 3500 else {
+            if interstitialLoadedAt.map({ Date().timeIntervalSince($0) >= 3500 }) == true { interstitial = nil }
+            preloadFullScreen(); return
+        }
+        do { try ad.canPresent(from: controller) } catch { interstitial = nil; return }
+        activeInterstitial = ad
+        interstitial = nil
+        isPresenting = true
+        defaults.set(Date(), forKey: "lastFullScreenAd")
+        defaults.set(defaults.integer(forKey: "adsShownToday") + 1, forKey: "adsShownToday")
+        ad.present(from: controller)
+    }
+    func unlockToolsWithReward() {
+        guard canRequestAds, !isPresenting, !WaterEjectionService.shared.isPlaying,
+              let ad = rewarded, let loaded = rewardedLoadedAt, Date().timeIntervalSince(loaded) < 3500,
+              let controller = Self.presenter, controller.presentedViewController == nil else {
+            message = "No video is available right now. Basic speaker tests are always free."
+            rewarded = nil; rewardedReady = false; preloadFullScreen(); return
+        }
+        do { try ad.canPresent(from: controller) } catch { message = error.localizedDescription; return }
+        activeRewarded = ad
+        rewarded = nil; rewardedReady = false; isPresenting = true
+        ad.present(from: controller) { [weak self] in
+            Task { @MainActor in
+                let expiry = Date().addingTimeInterval(1800)
+                self?.toolsUnlockedUntil = expiry
+                UserDefaults.standard.set(expiry, forKey: "toolsUnlockedUntil")
+                GrowthMetrics.shared.record("reward_earned")
+            }
+        }
+    }
+    func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
+        activeInterstitial = nil; activeRewarded = nil
+        isPresenting = false; preloadFullScreen()
+    }
+    func ad(_ ad: FullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
+        activeInterstitial = nil; activeRewarded = nil
+        isPresenting = false; message = "The ad could not be displayed. Please continue."
+        GrowthMetrics.shared.record("full_screen_present_failed")
+    }
+    func adDidRecordImpression(_ ad: FullScreenPresentingAd) { GrowthMetrics.shared.record("full_screen_impression") }
+    static var presenter: UIViewController? {
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        return scenes.first(where: { $0.activationState == .foregroundActive })?.windows.first(where: \.isKeyWindow)?.rootViewController
     }
 }
 
-// MARK: - Standard Banner Ad View
-// SwiftUI wrapper for standard banner ads with delegate coordination
-
+/// Each placement owns its view. Never attach one cached UIKit banner to multiple screens.
 struct BannerAdView: UIViewRepresentable {
-    /// Ad unit ID for the banner ad
     let adUnitId: String
-    
-    // MARK: - UIView Creation
-    // Creates a new banner view with proper delegate setup
-    
-    /// Creates a new banner view with coordinator delegate
-    /// Sets up proper ad loading and lifecycle management
+    let adSize: AdSize
+    func makeCoordinator() -> Coordinator { Coordinator() }
     func makeUIView(context: Context) -> BannerView {
-        let bannerView = BannerView(adSize: AdSizeBanner)
-        bannerView.adUnitID = adUnitId
-        bannerView.rootViewController = getRootViewController()
-        bannerView.delegate = context.coordinator  // Use coordinator as delegate
-        bannerView.load(Request())
-        return bannerView
+        let banner = BannerView(adSize: adSize)
+        banner.adUnitID = adUnitId
+        banner.rootViewController = AdMobService.presenter
+        banner.delegate = context.coordinator
+        banner.paidEventHandler = { value in
+            GrowthMetrics.shared.recordRevenue(value: value.value.decimalValue, currency: value.currencyCode, precision: value.precision.rawValue)
+        }
+        context.coordinator.load(banner)
+        return banner
     }
-    
-    // MARK: - UIView Updates
-    // No updates needed for banner views
-    
-    func updateUIView(_ uiView: BannerView, context: Context) {
-        // No updates needed
+    func updateUIView(_ uiView: BannerView, context: Context) {}
+    static func dismantleUIView(_ uiView: BannerView, coordinator: Coordinator) {
+        coordinator.retry?.cancel(); uiView.delegate = nil
     }
-    
-    // MARK: - Coordinator Creation
-    // Creates coordinator for handling ad lifecycle events
-    
-    /// Creates coordinator for banner ad delegate events
-    func makeCoordinator() -> Coordinator {
-        Coordinator()
-    }
-    
-    // MARK: - Banner Ad Coordinator
-    // Handles banner ad lifecycle events for standard banner views
-    
-    class Coordinator: NSObject, BannerViewDelegate {
-        /// Handles successful banner ad loading
+    @MainActor
+    final class Coordinator: NSObject, BannerViewDelegate {
+        var attempts = 0
+        var retry: DispatchWorkItem?
+        func load(_ banner: BannerView) {
+            guard AdMobService.shared.canRequestAds else { return }
+            GrowthMetrics.shared.record("banner_requested"); banner.load(Request())
+        }
         func bannerViewDidReceiveAd(_ bannerView: BannerView) {
-            print("Banner ad loaded successfully")
+            attempts = 0; GrowthMetrics.shared.record("banner_loaded")
         }
-        
-        /// Handles banner ad loading failures
         func bannerView(_ bannerView: BannerView, didFailToReceiveAdWithError error: Error) {
-            print("Banner ad failed to load: \(error.localizedDescription)")
+            GrowthMetrics.shared.record("banner_load_failed_\((error as NSError).code)")
+            guard attempts < 3 else { return }
+            attempts += 1
+            let work = DispatchWorkItem { [weak self, weak bannerView] in
+                guard let self, let bannerView, bannerView.window != nil else { return }
+                self.load(bannerView)
+            }
+            retry = work
+            DispatchQueue.main.asyncAfter(deadline: .now() + min(120, 15 * pow(2, Double(attempts - 1))), execute: work)
         }
+        func bannerViewDidRecordImpression(_ bannerView: BannerView) { GrowthMetrics.shared.record("banner_impression") }
     }
 }
 
-// MARK: - Smart Banner Ad View
-// SwiftUI wrapper for smart banner ads that adapt to screen size
-
-struct SmartBannerAdView: UIViewRepresentable {
-    /// Ad unit ID for the banner ad
-    let adUnitId: String
-    
-    // MARK: - UIView Creation
-    // Creates a smart banner view with adaptive sizing
-    
-    /// Creates a smart banner view with adaptive sizing
-    /// Automatically adjusts to different screen sizes and orientations
-    func makeUIView(context: Context) -> BannerView {
-        let bannerView = BannerView(adSize: AdSizeBanner)
-        bannerView.adUnitID = adUnitId
-        bannerView.rootViewController = getRootViewController()
-        bannerView.delegate = context.coordinator
-        bannerView.load(Request())
-        return bannerView
-    }
-    
-    // MARK: - UIView Updates
-    // No updates needed for banner views
-    
-    func updateUIView(_ uiView: BannerView, context: Context) {
-        // No updates needed
-    }
-    
-    // MARK: - Coordinator Creation
-    // Creates coordinator for smart banner ad events
-    
-    func makeCoordinator() -> Coordinator {
-        Coordinator()
-    }
-    
-    // MARK: - Smart Banner Coordinator
-    // Handles smart banner ad lifecycle events
-    
-    class Coordinator: NSObject, BannerViewDelegate {
-        /// Handles successful smart banner ad loading
-        func bannerViewDidReceiveAd(_ bannerView: BannerView) {
-            print("Smart banner ad loaded successfully")
-        }
-        
-        /// Handles smart banner ad loading failures
-        func bannerView(_ bannerView: BannerView, didFailToReceiveAdWithError error: Error) {
-            print("Smart banner ad failed to load: \(error.localizedDescription)")
-        }
-    }
+private struct BannerWidthKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
 }
-
-// MARK: - Conditional Banner Ad View
-// SwiftUI view that only shows ads when AdMob is initialized and ads are loaded
 
 struct ConditionalBannerAdView: View {
-    /// Ad unit ID for the banner ad
     let adUnitId: String
-    
-    // MARK: - View Body
-    // Conditionally displays banner ad based on initialization and loading status
-    
+    @ObservedObject private var ads = AdMobService.shared
+    @ObservedObject private var purchases = SubscriptionService.shared
+    @ObservedObject private var audio = WaterEjectionService.shared
+    @Environment(\.scenePhase) private var phase
+    @State private var width: CGFloat = 0
     var body: some View {
-        // MARK: - Conditional Ad Display
-        // Only show ads when AdMob is initialized and ad is loaded
-        // Prevents showing empty ad placeholders or loading states
-        if AdMobService.shared.isAdMobInitialized && AdMobService.shared.isAdLoaded {
-            PreloadedBannerAdView(adUnitId: adUnitId)
-                .frame(height: 50)  // Set fixed height for consistent layout
-        } else {
-            // MARK: - Empty State
-            // Show nothing instead of loading placeholder
-            // Provides cleaner user experience when ads are not ready
-            EmptyView()
+        if !purchases.isPremium, purchases.entitlementChecked, ads.isAdMobInitialized,
+           !audio.isPlaying, phase == .active, !ads.getBannerAdUnitId().isEmpty {
+            VStack(spacing: 4) {
+                Text("Advertisement").font(.caption2).foregroundStyle(.secondary)
+                if width >= 250 {
+                    let size = currentOrientationAnchoredAdaptiveBanner(width: width)
+                    BannerAdView(adUnitId: ads.getBannerAdUnitId(), adSize: size)
+                        .id(width)
+                        .frame(width: width, height: size.size.height)
+                } else { Color.clear.frame(height: 50) }
+            }.frame(maxWidth: .infinity).padding(.vertical, 8)
+                .background(GeometryReader { proxy in
+                    Color.clear.preference(key: BannerWidthKey.self, value: min(728, floor(proxy.size.width)))
+                })
+                .onPreferenceChange(BannerWidthKey.self) { if abs(width - $0) >= 1 { width = $0 } }
         }
     }
 }
-
-// MARK: - Helper Functions
-// Utility functions for AdMob integration
-
-/// Helper function to get the root view controller for ad display
-/// Required by AdMob SDK for proper ad presentation
-private func getRootViewController() -> UIViewController? {
-    // MARK: - Root View Controller Access
-    // Safely access the root view controller from the current window scene
-    // Required for proper ad display and interaction
-    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-       let window = windowScene.windows.first {
-        return window.rootViewController
-    }
-    return nil
-} 

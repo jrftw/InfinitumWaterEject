@@ -1,141 +1,52 @@
 # Infinitum Water Eject
 
-A comprehensive iOS app designed to protect your devices from water and dust damage using optimized sound frequencies. The app generates specific audio frequencies that help dislodge water and dust from device speakers and other components.
+Native SwiftUI iPhone/iPad utility. This branch prepares **1.0.2 (1)** for iOS 16+.
 
-## Features
+## Current features
 
-### Core Functionality
-- **Multi-Device Support**: Optimized frequencies for iPhone, iPad, MacBook, Apple Watch, AirPods, and other devices
-- **Intensity Levels**: Multiple ejection intensities (Low, Medium, High, Emergency, Realtime)
-- **Real-time Control**: Dynamic frequency adjustment during active sessions
-- **Session Tracking**: Complete history and analytics of all water and dust ejection sessions
-- **Safety Features**: Built-in safety checks and user guidance
+- Timed eject tones, custom cycle settings and realtime frequency adjustment.
+- Free 50–2,000 Hz speaker tests; custom saved presets with lifetime Premium or optional 30-minute rewarded access.
+- Home Screen small/medium and Lock Screen circular/rectangular widgets. Widget links open the app before playing audio.
+- App Intents for Start Water Ejection (30 seconds), Stop Audio, and Open Speaker Tools, with Siri phrases and Shortcuts discovery.
+- Existing local session history and achievements retained. Completion counts measure usage, not water removal or repair success.
+- Verified StoreKit 2 entitlements; lifetime purchase, refunds, restores, and existing subscription identifiers supported. New purchase UI offers lifetime only. Prices come from Apple.
+- Consent-gated AdMob banners and post-session interstitials; Debug uses Google's sample units. No ad interrupts audio or blocks Start.
+- Optional on-device diagnostics for session/purchase/ad events, currency-separated ad revenue estimates, and active days. No automatic analytics upload.
 
-### Premium Features (Subscription Required)
-- **Ad-Free Experience**: Remove all advertisements
-- **Unlimited Sessions**: No daily limits on water and dust ejection sessions
-- **Advanced Analytics**: Detailed insights into device protection habits
-- **Apple Watch Widgets**: Quick access to controls and statistics on your Apple Watch
-- **Apple Watch App**: Full water and dust ejection functionality on Apple Watch
-- **Custom Frequency Presets**: Save and reuse custom frequency settings
-- **Export Session Data**: Backup and analyze your session history
-- **Cloud Backup & Sync**: Secure cloud storage for your data (uses Apple iCloud/CloudKit free tier, no ongoing cost)
-- **Priority Customer Support**: Get help faster with premium support
-- **Custom Notification Schedules**: Personalized reminder settings
+## Build and test
 
-### Apple Watch Integration
-- **Watch App**: Complete water and dust ejection functionality on Apple Watch
-- **Complications**: Quick access to session statistics on watch faces
-- **Widgets**: Multiple widget sizes showing session data and quick controls
-- **Real-time Sync**: Instant synchronization between iPhone and Apple Watch
+Open `Infinitum Water Eject.xcodeproj` in Xcode. Select the `Infinitum Water Eject` scheme. Use your Apple Developer team for device signing and enable the existing `group.com.infinitumimagery.watereject` App Group for both app and widget extension.
 
-### Widget Support
-- **Small Widget**: Session count and last activity
-- **Medium Widget**: Session statistics and success rate
-- **Large Widget**: Comprehensive stats with detailed metrics
-- **Real-time Updates**: Widgets update automatically with new session data
+```sh
+xcodebuild -project 'Infinitum Water Eject.xcodeproj' \
+  -scheme 'Infinitum Water Eject' -destination 'platform=iOS Simulator,name=iPhone 18 Pro' \
+  CODE_SIGNING_ALLOWED=NO test
+```
 
-## Subscription Plans
+`WaterEjectTests` runs native audio/history, placement-cap, lifetime purchase/refund, and accelerated subscription-expiry regression checks. StoreKit tests use a local configuration and do not charge real money. The test target requires iOS 17+ with the installed Xcode; the app and widget deployment target remains iOS 16.
 
-### Monthly Premium
-- $0.99/month
-- All premium features included
-- Cancel anytime
+For screenshot capture, Debug accepts `--snapshot-route eject`, `--snapshot-route tools` or `--snapshot-route history`. These arguments only select a screen and suppress ad-consent UI for captures; they do not grant Premium or start audio. Release does not include this path.
 
-### Yearly Premium
-- $4.99/year (Save 50%)
-- All premium features included
-- Best value option
+## Release configuration
 
-## Technical Details
+App ID: `6748260343`. Bundle ID: `Infinitum-Imagery-LLC.Infinitum-Water-Eject`.
 
-### Architecture
-- **SwiftUI**: Modern declarative UI framework
-- **Core Data**: Local data persistence with CloudKit support
-- **AVFoundation**: Audio generation and playback
-- **StoreKit**: In-app purchase and subscription management
-- **UserNotifications**: Local notification system
-- **WidgetKit**: iOS and watchOS widget support
-- **ClockKit**: Apple Watch complications
+Lifetime non-consumable: `com.infinitumimagery.watereject.premium.lifetime`. Approved starting price from the owner: **US $7.99**; Apple supplies localized prices.
 
-### Audio Generation
-- **Frequency Optimization**: Device-specific frequencies for maximum effectiveness
-- **Safe Volume Levels**: Controlled amplitude to prevent device damage
-- **Real-time Generation**: Dynamic audio buffer creation and playback
-- **Variation Patterns**: Subtle frequency variations for enhanced effectiveness
+Production ad units are in the app's Info.plist:
 
-### Data Models
-- **WaterEjectionSession**: Complete session tracking with metadata
-- **UserSettings**: User preferences and configuration
-- **DeviceType**: Supported device types with optimized parameters
-- **IntensityLevel**: Ejection intensity levels with duration mapping
+- Existing banner: `ca-app-pub-6815311336585204/1784836834`
+- Completed-cycle interstitial: `ca-app-pub-6815311336585204/9270556090`
+- Optional rewarded preset saving: `ca-app-pub-6815311336585204/7957474425`
 
-### Services
-- **WaterEjectionService**: Core ejection logic and audio management
-- **CoreDataService**: Data persistence and management
-- **SubscriptionService**: Premium feature management with StoreKit integration
-- **NotificationService**: Local notification handling
-- **AdMobService**: Advertisement management (disabled for premium users)
+Interstitial eligibility: after any completed eject cycle lasting at least 25 seconds, once at least 25 seconds have elapsed in the app, at least 3 minutes apart, at most 3 per local day. Every free installation is eligible; no banner-only holdout is applied. Banners adapt to the available layout width. The AdMob unit also caps interstitial impressions to 3 per 24 hours. Rewarded ads are shown only after explicit opt-in and grant access only through the SDK reward callback.
 
-### Widget & Watch Integration
-- **Shared UserDefaults**: Data synchronization between app and widgets
-- **Timeline Provider**: Real-time widget updates
-- **Complication Support**: Apple Watch face complications
-- **Watch App**: Native Apple Watch application
+`release/store-localizations.json` backs up the 10 store descriptions/promotional texts/keywords/release notes prepared for the next version. `release/website-content.html` is a draft replacement article for the existing website URL, with SEO title, description, canonical and SoftwareApplication data. It is not a deployed website.
 
-## Installation
+Water Eject-specific European and US privacy messages are published in AdMob, and the existing published IDFA explainer now includes this app. UMP completes the consent flow before any ad request. Info.plist includes the ATT explanation and 50 SKAdNetwork identifiers from Google’s official integration guide. App Store privacy labels declare the pinned Google SDK data categories, linkage, purposes, and optional device-ID tracking. The lifetime purchase and actual paywall screenshot have been added to the draft review submission. Fresh iPhone and iPad screenshots are uploaded.
 
-### Requirements
-- iOS 15.6 or later
-- watchOS 8.0 or later (for Apple Watch features)
-- Xcode 15.0 or later (for development)
+Fourteen regression/StoreKit/capture tests pass, and the signed 1.0.2 (1) archive and App Store distribution export succeed. A signed physical-device acceptance pass remains unverified. The public website's old ad-free claims must be replaced alongside release. Store-side drafts and code do not themselves publish the update.
 
-### Setup
-1. Clone the repository
-2. Open `Infinitum Water Eject.xcodeproj` in Xcode
-3. Configure your development team and bundle identifier
-4. Build and run on device or simulator
+For population revenue, conversion and retention, use AdMob and App Store Connect reporting. Local diagnostic exports are scoped to one installation and must not be presented as aggregate business metrics. A centralized analytics backend is not configured in this branch.
 
-## Usage
-
-### Basic Water and Dust Ejection
-1. Open the app and select your device type
-2. Choose the appropriate intensity level
-3. Tap "Start Water & Dust Ejection"
-4. Follow the on-screen timer and safety tips
-5. Let your device dry completely before use
-
-### Apple Watch Usage
-1. Open Water Eject app on Apple Watch
-2. Select device and intensity
-3. Start ejection session
-4. Monitor progress on watch face
-5. Complete session when finished
-
-### Widget Usage
-1. Add Water Eject widget to home screen
-2. View session statistics at a glance
-3. Quick access to start new sessions
-4. Monitor weekly progress
-
-## Safety Guidelines
-
-### Important Notes
-- **Not a Guarantee**: This app is not a guarantee against water or dust damage
-- **Professional Help**: Seek professional repair for severe water or dust damage
-- **Preventive Only**: Use as a preventive measure, not for severe damage
-
-### Best Practices
-- Act quickly after water or dust exposure
-- Remove cases and accessories before ejection
-- Use appropriate intensity levels
-- Let device dry completely before use
-- Follow device-specific safety tips
-
-## Support
-
-For support, questions, or feature requests, please contact us through the app's support section or email support@infinitumlive.com.
-
-## License
-
-Copyright © 2025 Infinitum Imagery LLC. All rights reserved. 
+Historical `*_GUIDE.md` and `*_SUMMARY.md` files predate this branch and contain proposals or old implementation claims; use current source and verified builds as the authority.

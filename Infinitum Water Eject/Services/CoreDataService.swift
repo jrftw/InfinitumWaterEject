@@ -140,6 +140,7 @@ class CoreDataService: ObservableObject {
     /// Saves the managed object context if there are unsaved changes
     /// Includes error handling and logging for debugging
     func save() {
+        objectWillChange.send()
         if context.hasChanges {
             do {
                 try context.save()
@@ -322,6 +323,7 @@ class CoreDataService: ObservableObject {
             let entities = try context.fetch(request)
             entities.forEach { context.delete($0) }
             save()  // Persist deletion to Core Data
+            updateWidgetData()
         } catch {
             print("Error deleting session: \(error)")
         }
